@@ -8,7 +8,7 @@ import (
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata"
 )
 
-func TestBaseAggregateID(t *testing.T) {
+func TestNewBase(t *testing.T) {
 	t.Run("ItPanicsIfThePureAggregateIsNotGiven", func(t *testing.T) {
 		factory := func() {
 			aggregate.NewBase(nil)
