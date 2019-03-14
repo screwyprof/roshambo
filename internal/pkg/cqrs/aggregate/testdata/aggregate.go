@@ -21,3 +21,7 @@ func NewTestAggregate(ID domain.Identifier) *TestAggregate {
 func (a *TestAggregate) AggregateID() domain.Identifier {
 	return a.id
 }
+
+func (a *TestAggregate) MakeSomethingHappen(c MakeSomethingHappen) ([]domain.DomainEvent, error) {
+	return []domain.DomainEvent{SomethingHappened{}}, nil
+}
