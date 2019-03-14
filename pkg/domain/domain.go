@@ -7,7 +7,7 @@ type Identifier interface {
 	fmt.Stringer
 }
 
-// Command
+// Command is an object that is sent to the domain to change state.
 //
 // People request changes to the domain by sending commands.
 // Command are named with a verb in the imperative mood, for example ConfirmOrder.
@@ -15,7 +15,7 @@ type Command interface {
 	CommandType() string
 }
 
-// CommandHandler
+// CommandHandler executes commands.
 //
 // A command handler receives a command and brokers a result from the appropriate aggregate.
 // "A result" is either a successful application of the command, or an error.
@@ -43,9 +43,8 @@ type EventApplier interface {
 // EventApplierFunc is a function that can be used as an event applier.
 type EventApplierFunc func(DomainEvent)
 
-// Aggregate
+// Aggregate is a cluster of domain objects that can be treated as a single unit.
 //
-// A larger unit of encapsulation than just a class.
 // Every transaction is scoped to a single aggregate.
 // The lifetimes of the components of an aggregate are bounded by
 // the lifetime of the entire aggregate.
