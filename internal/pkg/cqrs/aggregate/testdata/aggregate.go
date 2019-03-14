@@ -8,6 +8,7 @@ import (
 
 var (
 	ErrMakeSomethingHandlerNotFound  = errors.New("handler for MakeSomethingHappen command is not found")
+	ErrOnSomethingHappenedApplierNotFound  = errors.New("event applier for OnSomethingHappened event is not found")
 )
 
 type StringIdentifier string
@@ -18,6 +19,7 @@ func (i StringIdentifier) String() string {
 // TestAggregate a pure aggregate (has no external dependencies or dark magic method) used for testing.
 type TestAggregate struct {
 	id domain.Identifier
+	happened bool
 }
 
 // NewTestAggregate creates a new instance of TestAggregate.
@@ -32,4 +34,8 @@ func (a *TestAggregate) AggregateID() domain.Identifier {
 
 func (a *TestAggregate) MakeSomethingHappen(c MakeSomethingHappen) ([]domain.DomainEvent, error) {
 	return []domain.DomainEvent{SomethingHappened{}}, nil
+}
+
+func (a *TestAggregate) OnSomethingHappened(e SomethingHappened) {
+	a.happened = true
 }
