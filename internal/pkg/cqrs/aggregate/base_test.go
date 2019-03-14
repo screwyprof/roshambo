@@ -28,7 +28,7 @@ func TestNewBase(t *testing.T) {
 }
 
 func TestBaseHandle(t *testing.T) {
-	t.Run("ItHandlesTheGivenCommand", func(t *testing.T) {
+	t.Run("ItHandlesTheGivenCommandIfTheHandlerExists", func(t *testing.T) {
 		// arrange
 		ID := testdata.StringIdentifier("TestAgg1")
 		pureAgg := testdata.NewTestAggregate(ID)
@@ -50,5 +50,19 @@ func TestBaseHandle(t *testing.T) {
 		// assert
 		assert.Ok(t, err)
 		assert.Equals(t, expectedEvents, events)
+	})
+
+	t.Run("ItReturnsAnErrorIfTheHandlerIsNotFound", func(t *testing.T) {
+		// arrange
+		ID := testdata.StringIdentifier("TestAgg1")
+		pureAgg := testdata.NewTestAggregate(ID)
+
+		agg := aggregate.NewBase(pureAgg, nil)
+
+		// act
+		_, err := agg.Handle(testdata.MakeSomethingHappen{})
+
+		// assert
+		assert.Equals(t, testdata.ErrMakeSomethingHandlerNotFound, err)
 	})
 }

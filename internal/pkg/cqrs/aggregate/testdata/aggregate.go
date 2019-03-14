@@ -1,6 +1,14 @@
 package testdata
 
-import "github.com/screwyprof/roshambo/pkg/domain"
+import (
+	"errors"
+
+	"github.com/screwyprof/roshambo/pkg/domain"
+)
+
+var (
+	ErrMakeSomethingHandlerNotFound  = errors.New("handler for MakeSomethingHappen command is not found")
+)
 
 type StringIdentifier string
 func (i StringIdentifier) String() string {
