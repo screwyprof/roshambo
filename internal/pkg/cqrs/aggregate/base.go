@@ -9,5 +9,8 @@ type Base struct {
 
 // NewBase creates a new instance of Base.
 func NewBase(pureAgg domain.Aggregate) *Base {
+	if pureAgg == nil {
+		panic("pureAgg is required")
+	}
 	return &Base{Aggregate: pureAgg}
 }
