@@ -10,20 +10,15 @@ import (
 	"github.com/screwyprof/roshambo/pkg/domain"
 )
 
+// ensure that basic aggregate implements domain.AdvancedAggregate interface.
+var _ domain.AdvancedAggregate = (*aggregate.Base)(nil)
+
 func TestNewBase(t *testing.T) {
 	t.Run("ItPanicsIfThePureAggregateIsNotGiven", func(t *testing.T) {
 		factory := func() {
 			aggregate.NewBase(nil, nil, nil)
 		}
 		assert.Panic(t, factory)
-	})
-
-	t.Run("ItReturnsAggregateID", func(t *testing.T) {
-		ID := testdata.StringIdentifier("TestAgg1")
-		pureAgg := testdata.NewTestAggregate(ID)
-		agg := aggregate.NewBase(pureAgg, nil, nil)
-
-		assert.Equals(t, ID, agg.AggregateID())
 	})
 }
 
@@ -64,11 +59,24 @@ func TestBaseHandle(t *testing.T) {
 	})
 }
 
+func TestBaseApply(t *testing.T) {
+	t.Run("ItReturnsAnErrorIfTheEventAppliersNotFound", func(t *testing.T) {
+		// arrange
+		agg := createTestAggWithDefaultCommandHandlerAndEventApplier()
+
+		// act
+		err := agg.Apply(testdata.SomethingHappened{})
+
+		// assert
+		assert.Equals(t, testdata.ErrOnSomethingHappenedApplierNotFound, err)
+	})
+}
+
 func createTestAggWithDefaultCommandHandlerAndEventApplier() *aggregate.Base {
 	ID := testdata.StringIdentifier("TestAgg1")
 	pureAgg := testdata.NewTestAggregate(ID)
-	agg := aggregate.NewBase(pureAgg, nil, nil)
-	return agg
+
+	return aggregate.NewBase(pureAgg, nil, nil)
 }
 
 func createTestAggWithCustomCommandHandler() *aggregate.Base {
