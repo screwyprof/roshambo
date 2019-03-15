@@ -2,6 +2,7 @@ package game
 
 import (
 	"errors"
+
 	"github.com/screwyprof/roshambo/pkg/command"
 	"github.com/screwyprof/roshambo/pkg/domain"
 	"github.com/screwyprof/roshambo/pkg/event"
