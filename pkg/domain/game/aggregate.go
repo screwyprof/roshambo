@@ -2,7 +2,6 @@ package game
 
 import (
 	"errors"
-
 	"github.com/screwyprof/roshambo/pkg/command"
 	"github.com/screwyprof/roshambo/pkg/domain"
 	"github.com/screwyprof/roshambo/pkg/event"
@@ -14,6 +13,7 @@ const (
 	notCreated state = iota
 	created
 	waiting
+	won
 )
 
 var (
@@ -53,6 +53,11 @@ func (a *Aggregate) MakeMove(c command.MakeMove) ([]domain.DomainEvent, error) {
 	if a.playerEmail == c.PlayerEmail {
 		return nil, ErrPlayerIsTheSame
 	}
+
+	if a.state == waiting {
+		return []domain.DomainEvent{event.GameWon{GameID: c.GameID, Winner: c.PlayerEmail, Loser: a.playerEmail}}, nil
+	}
+
 	return []domain.DomainEvent{event.MoveDecided{GameID: c.GameID, PlayerEmail: c.PlayerEmail, Move: c.Move}}, nil
 }
 
@@ -64,4 +69,8 @@ func (a *Aggregate) OnMoveDecided(e event.MoveDecided) {
 	a.playerEmail = e.PlayerEmail
 	a.move = Move(e.Move)
 	a.state = waiting
+}
+
+func (a *Aggregate) OnGameWon(e event.GameWon) {
+	a.state = won
 }

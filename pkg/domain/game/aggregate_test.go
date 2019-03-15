@@ -75,6 +75,18 @@ func TestAggregateMakeMove(t *testing.T) {
 			ThenFailWith(game.ErrPlayerIsTheSame),
 		)
 	})
+
+	t.Run("TheSecondPlayerWinsTheGame", func(t *testing.T) {
+		ID := testdata.StringIdentifier("g777")
+		Test(t)(
+			Given(createTestAggregate(),
+				event.GameCreated{GameID: ID.String()},
+				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player1@game.com", Move: int(game.Rock)}),
+			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Paper)}),
+			Then(event.GameWon{GameID: ID.String(), Winner: "player2@game.com", Loser: "player1@game.com"}),
+		)
+	})
+
 }
 
 func createTestAggregate() *aggregate.Base {
