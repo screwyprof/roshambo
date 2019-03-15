@@ -35,13 +35,22 @@ func TestAggregateAggregateID(t *testing.T) {
 	})
 }
 
-func TestAggregate(t *testing.T) {
+func TestAggregate_CreateNewGame(t *testing.T) {
 	t.Run("ItCreatesNewGame", func(t *testing.T) {
 		ID := testdata.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate()),
 			When(command.CreateNewGame{GameID: ID.String()}),
 			Then(event.GameCreated{GameID: ID.String()}),
+		)
+	})
+
+	t.Run("ItCannotStartANewGameIfItTheGameIsAlreadyStarted", func(t *testing.T) {
+		ID := testdata.StringIdentifier("g777")
+		Test(t)(
+			Given(createTestAggregate(), event.GameCreated{GameID: ID.String()}),
+			When(command.CreateNewGame{GameID: ID.String()}),
+			ThenFailWith(game.ErrGameIsAlreadyStarted),
 		)
 	})
 }

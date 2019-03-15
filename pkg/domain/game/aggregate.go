@@ -1,6 +1,8 @@
 package game
 
 import (
+	"errors"
+
 	"github.com/screwyprof/roshambo/pkg/command"
 	"github.com/screwyprof/roshambo/pkg/domain"
 	"github.com/screwyprof/roshambo/pkg/event"
@@ -9,7 +11,12 @@ import (
 type state int
 
 const (
-	created state = iota
+	notCreated state = iota
+	created
+)
+
+var (
+	ErrGameIsAlreadyStarted = errors.New("game is already started")
 )
 
 type Aggregate struct {
@@ -22,7 +29,7 @@ func NewAggregate(ID domain.Identifier) *Aggregate {
 	if ID == nil {
 		panic("ID is required")
 	}
-	return &Aggregate{id: ID}
+	return &Aggregate{id: ID, state: notCreated}
 }
 
 // AggregateID implements domain.Aggregate interface.
@@ -31,6 +38,9 @@ func (a *Aggregate) AggregateID() domain.Identifier {
 }
 
 func (a *Aggregate) CreateNewGame(c command.CreateNewGame) ([]domain.DomainEvent, error) {
+	if a.state != notCreated {
+		return nil, ErrGameIsAlreadyStarted
+	}
 	return []domain.DomainEvent{event.GameCreated{GameID: c.GameID}}, nil
 }
 
