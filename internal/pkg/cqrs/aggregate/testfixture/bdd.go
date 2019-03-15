@@ -20,7 +20,7 @@ type ThenFn func(t *testing.T) Checker
 // Checker asserts the given results.
 type Checker func(got []domain.DomainEvent, err error)
 
-// AggregateTest defines an aggregate tester.
+// AggregateTester defines an aggregate tester.
 type AggregateTester func(given GivenFn, when WhenFn, then ThenFn)
 
 // Test runs the test.
