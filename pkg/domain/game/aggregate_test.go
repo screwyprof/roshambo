@@ -76,6 +76,15 @@ func TestAggregateMakeMove(t *testing.T) {
 		)
 	})
 
+	t.Run("ItFailsIfTheGameHaveNotStarted", func(t *testing.T) {
+		ID := testdata.StringIdentifier("g777")
+		Test(t)(
+			Given(createTestAggregate()),
+			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player@game.com", Move: int(game.Rock)}),
+			ThenFailWith(game.ErrTheGameHaveNotStarted),
+		)
+	})
+
 	t.Run("FirstPlayerDeclaredAWinner", func(t *testing.T) {
 		ID := testdata.StringIdentifier("g777")
 		Test(t)(
