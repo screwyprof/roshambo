@@ -33,6 +33,7 @@ type AggregateTester func(given GivenFn, when WhenFn, then ThenFn)
 //  )
 func Test(t *testing.T) AggregateTester {
 	return func(given GivenFn, when WhenFn, then ThenFn) {
+		t.Helper()
 		then(t)(when(applyEvents(given)))
 	}
 }
@@ -58,6 +59,7 @@ func When(c domain.Command) WhenFn {
 func Then(want ...domain.DomainEvent) ThenFn {
 	return func(t *testing.T) Checker {
 		return func(got []domain.DomainEvent, err error) {
+			t.Helper()
 			assert.Ok(t, err)
 			assert.Equals(t, want, got)
 		}
@@ -68,6 +70,7 @@ func Then(want ...domain.DomainEvent) ThenFn {
 func ThenFailWith(want error) ThenFn {
 	return func(t *testing.T) Checker {
 		return func(got []domain.DomainEvent, err error) {
+			t.Helper()
 			assert.Equals(t, want, err)
 		}
 	}

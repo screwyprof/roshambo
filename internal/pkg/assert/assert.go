@@ -1,20 +1,16 @@
 package assert
 
 import (
-	"fmt"
-	"path/filepath"
-	"reflect"
-	"runtime"
 	"testing"
+
+	"github.com/screwyprof/roshambo/internal/pkg/assert/deep"
 )
 
 // True fails the test if the condition is false.
-func True(tb testing.TB, condition bool, msg string, v ...interface{}) {
+func True(tb testing.TB, condition bool) {
 	tb.Helper()
 	if !condition {
-		_, file, line, _ := runtime.Caller(1)
-		fmt.Printf("\033[31m%s:%d: "+msg+"\033[39m\n\n", append([]interface{}{filepath.Base(file), line}, v...)...)
-		tb.FailNow()
+		tb.Errorf("\033[31mcondition is false\033[39m\n\n")
 	}
 }
 
@@ -22,30 +18,25 @@ func True(tb testing.TB, condition bool, msg string, v ...interface{}) {
 func Ok(tb testing.TB, err error) {
 	tb.Helper()
 	if err != nil {
-		_, file, line, _ := runtime.Caller(2)
-		fmt.Printf("\033[31m%s:%d: unexpected error: %s\033[39m\n\n", filepath.Base(file), line, err.Error())
-		tb.FailNow()
+		tb.Errorf("\033[31munexpected error: %v\033[39m\n\n", err)
 	}
 }
 
 // Equals fails the test if exp is not equal to act.
 func Equals(tb testing.TB, exp, act interface{}) {
 	tb.Helper()
-	if !reflect.DeepEqual(exp, act) {
-		_, file, line, _ := runtime.Caller(2)
-		fmt.Printf("\033[31m%s:%d:\n\n\texp: %#v\n\n\tgot: %#v\033[39m\n\n", filepath.Base(file), line, exp, act)
-		tb.FailNow()
+	if diff := deep.Equal(exp, act); diff != nil {
+		tb.Error("\033[31m", diff, "\033[39m")
 	}
 }
 
-// Panic fail the test if f didn't panic.
+// Panic fails the test if it didn't panic.
 func Panic(tb testing.TB, f func()) {
 	tb.Helper()
 	defer func() {
+		tb.Helper()
 		if r := recover(); r == nil {
-			_, file, line, _ := runtime.Caller(2)
-			fmt.Printf("\033[31m%s:%d: panic is expected\033[39m\n\n", filepath.Base(file), line)
-			tb.FailNow()
+			tb.Errorf("\033[31mpanic is expected\033[39m")
 		}
 	}()
 	f()
