@@ -63,3 +63,9 @@ type AdvancedAggregate interface {
 	CommandHandler
 	EventApplier
 }
+
+// EventStore stores and loads events.
+type EventStore interface {
+	LoadEventsFor(aggregateID Identifier) ([]DomainEvent, error)
+	StoreEventsFor(aggregateID Identifier, version int, events []DomainEvent) error
+}
