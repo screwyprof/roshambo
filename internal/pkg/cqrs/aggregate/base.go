@@ -30,13 +30,14 @@ func NewBase(pureAgg domain.Aggregate, handler commandHandler, applier eventAppl
 	}
 
 	if handler == nil {
-		handler = NewStaticCommandHandler()
+		handler = newDynamicCommandHandler()
 	}
-	handler.RegisterHandlers(pureAgg)
 
 	if applier == nil {
-		applier = NewStaticEventApplier()
+		applier = newDynamicEventApplier()
 	}
+
+	handler.RegisterHandlers(pureAgg)
 	applier.RegisterAppliers(pureAgg)
 
 	return &Base{
