@@ -4,10 +4,14 @@ import (
 	"testing"
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata"
+	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testfixture"
 
+	"github.com/screwyprof/roshambo/pkg/command"
 	"github.com/screwyprof/roshambo/pkg/domain"
 	"github.com/screwyprof/roshambo/pkg/domain/game"
+	"github.com/screwyprof/roshambo/pkg/event"
 )
 
 // ensure that game aggregate implements domain.Aggregate interface.
@@ -29,4 +33,22 @@ func TestAggregateAggregateID(t *testing.T) {
 
 		assert.Equals(t, ID, agg.AggregateID())
 	})
+}
+
+func TestAggregate(t *testing.T) {
+	t.Run("ItCreatesNewGame", func(t *testing.T) {
+		ID := testdata.StringIdentifier("g777")
+		Test(t)(
+			Given(createTestAggregate()),
+			When(command.CreateNewGame{GameID: ID.String()}),
+			Then(event.GameCreated{GameID: ID.String()}),
+		)
+	})
+}
+
+func createTestAggregate() *aggregate.Base {
+	ID := testdata.StringIdentifier("GameAgg")
+	gameAgg := game.NewAggregate(ID)
+
+	return aggregate.NewBase(gameAgg, nil, nil)
 }
