@@ -13,6 +13,7 @@ const (
 	notCreated state = iota
 	created
 	waiting
+	tied
 	won
 )
 
@@ -55,7 +56,10 @@ func (a *Aggregate) MakeMove(c command.MakeMove) ([]domain.DomainEvent, error) {
 	}
 
 	if a.state == waiting {
-		return []domain.DomainEvent{event.GameWon{GameID: c.GameID, Winner: c.PlayerEmail, Loser: a.playerEmail}}, nil
+		return []domain.DomainEvent{
+			event.MoveDecided{GameID: c.GameID, PlayerEmail: c.PlayerEmail, Move: c.Move},
+			a.finish(c.GameID, c.PlayerEmail, NewMove(c.Move)),
+		}, nil
 	}
 
 	return []domain.DomainEvent{event.MoveDecided{GameID: c.GameID, PlayerEmail: c.PlayerEmail, Move: c.Move}}, nil
@@ -73,4 +77,19 @@ func (a *Aggregate) OnMoveDecided(e event.MoveDecided) {
 
 func (a *Aggregate) OnGameWon(e event.GameWon) {
 	a.state = won
+}
+
+func (a *Aggregate) OnGameTied(e event.GameTied) {
+	a.state = tied
+}
+
+func (a *Aggregate) finish(gameID string, opponentEmail string, opponentMove Move) domain.DomainEvent {
+	switch {
+	case a.move.defeats(opponentMove):
+		return event.GameWon{GameID: gameID, Winner: a.playerEmail, Loser: opponentEmail}
+	case opponentMove.defeats(a.move):
+		return event.GameWon{GameID: gameID, Winner: opponentEmail, Loser: a.playerEmail}
+	default:
+		return event.GameTied{GameID: gameID}
+	}
 }

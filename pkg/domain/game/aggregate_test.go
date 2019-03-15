@@ -76,14 +76,31 @@ func TestAggregateMakeMove(t *testing.T) {
 		)
 	})
 
-	t.Run("TheSecondPlayerWinsTheGame", func(t *testing.T) {
+	t.Run("PlayerDeclaredAWinner", func(t *testing.T) {
 		ID := testdata.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate(),
 				event.GameCreated{GameID: ID.String()},
 				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player1@game.com", Move: int(game.Rock)}),
 			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Paper)}),
-			Then(event.GameWon{GameID: ID.String(), Winner: "player2@game.com", Loser: "player1@game.com"}),
+			Then(
+				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Paper)},
+				event.GameWon{GameID: ID.String(), Winner: "player2@game.com", Loser: "player1@game.com"},
+			),
+		)
+	})
+
+	t.Run("GameTied", func(t *testing.T) {
+		ID := testdata.StringIdentifier("g777")
+		Test(t)(
+			Given(createTestAggregate(),
+				event.GameCreated{GameID: ID.String()},
+				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player1@game.com", Move: int(game.Scissors)}),
+			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Scissors)}),
+			Then(
+				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Scissors)},
+				event.GameTied{GameID: ID.String()},
+			),
 		)
 	})
 
