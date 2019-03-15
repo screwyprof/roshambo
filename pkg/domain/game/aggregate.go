@@ -18,9 +18,9 @@ const (
 )
 
 var (
-	ErrGameIsAlreadyStarted  = errors.New("game is already started")
-	ErrPlayerIsTheSame       = errors.New("the player is already in the game")
-	ErrTheGameHaveNotStarted = errors.New("the game haven't started yet")
+	ErrGameIsAlreadyStarted            = errors.New("game is already started")
+	ErrPlayerIsTheSame                 = errors.New("the player is already in the game")
+	ErrTheGameHaveNotStartedOrFinished = errors.New("the game haven't started or finished")
 )
 
 type Aggregate struct {
@@ -57,7 +57,7 @@ func (a *Aggregate) CreateNewGame(c command.CreateNewGame) ([]domain.DomainEvent
 //
 // When the second player has moved, the game is finished with a tie or a win.
 //
-// It returns ErrTheGameHaveNotStarted if the game haven't started yet.
+// It returns ErrTheGameHaveNotStartedOrFinished if the game haven't started yet.
 // It returns ErrPlayerIsTheSame if the player is the same.
 func (a *Aggregate) MakeMove(c command.MakeMove) ([]domain.DomainEvent, error) {
 	switch {
@@ -71,7 +71,7 @@ func (a *Aggregate) MakeMove(c command.MakeMove) ([]domain.DomainEvent, error) {
 			a.finish(c.GameID, c.PlayerEmail, NewMove(c.Move)),
 		}, nil
 	default:
-		return nil, ErrTheGameHaveNotStarted
+		return nil, ErrTheGameHaveNotStartedOrFinished
 	}
 }
 
