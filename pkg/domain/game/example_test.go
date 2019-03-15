@@ -2,8 +2,8 @@ package game_test
 
 import (
 	"fmt"
-	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
 
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata"
 
 	"github.com/screwyprof/roshambo/pkg/command"
@@ -11,43 +11,54 @@ import (
 	"github.com/screwyprof/roshambo/pkg/domain/game"
 )
 
-var (
-	ID   domain.Identifier
-	Game domain.AdvancedAggregate
-
-	Player1 string
-	Player2 string
-)
-
-func init() {
-	ID = testdata.StringIdentifier("TheGame")
-
-	Player1 = "tom@game.net"
-	Player2 = "jerry@game.net"
-}
-
-func ExampleTie() {
-	Game = aggregate.NewBase(game.NewAggregate(ID), nil, nil)
-
-	Game.Handle(command.CreateNewGame{GameID: ID.String()})
-	Game.Handle(command.MakeMove{GameID: ID.String(), PlayerEmail: Player1, Move: int(game.Rock)})
-	events, _ := Game.Handle(command.MakeMove{GameID: ID.String(), PlayerEmail: Player2, Move: int(game.Rock)})
-
-	fmt.Printf("%#v", events[1])
-
-	// Output:
-	// event.GameTied{GameID:"TheGame"}
-}
-
 func ExampleVictory() {
-	Game = aggregate.NewBase(game.NewAggregate(ID), nil, nil)
+	suite := newExampleSuite("TheGame")
+	suite.run(func(ID domain.Identifier, agg domain.AdvancedAggregate, player1, player2 string) {
+		agg.Handle(command.CreateNewGame{GameID: ID.String()})
+		agg.Handle(command.MakeMove{GameID: ID.String(), PlayerEmail: player1, Move: int(game.Rock)})
+		events, _ := agg.Handle(command.MakeMove{GameID: ID.String(), PlayerEmail: player2, Move: int(game.Paper)})
 
-	Game.Handle(command.CreateNewGame{GameID: ID.String()})
-	Game.Handle(command.MakeMove{GameID: ID.String(), PlayerEmail: Player1, Move: int(game.Rock)})
-	events, _ := Game.Handle(command.MakeMove{GameID: ID.String(), PlayerEmail: Player2, Move: int(game.Paper)})
-
-	fmt.Printf("%#v", events[1])
+		fmt.Printf("%#v", events[1])
+	})
 
 	// Output:
 	// event.GameWon{GameID:"TheGame", Winner:"jerry@game.net", Loser:"tom@game.net"}
+}
+
+func ExampleTie() {
+	suite := newExampleSuite("TieGame")
+	suite.run(func(ID domain.Identifier, agg domain.AdvancedAggregate, player1, player2 string) {
+		agg.Handle(command.CreateNewGame{GameID: ID.String()})
+		agg.Handle(command.MakeMove{GameID: ID.String(), PlayerEmail: player1, Move: int(game.Rock)})
+		events, _ := agg.Handle(command.MakeMove{GameID: ID.String(), PlayerEmail: player2, Move: int(game.Rock)})
+
+		fmt.Printf("%#v", events[1])
+	})
+
+	// Output:
+	// event.GameTied{GameID:"TieGame"}
+}
+
+type exampleRunner func(ID domain.Identifier, gameAggregate domain.AdvancedAggregate, player1, player2 string)
+
+type exampleSuite struct {
+	ID   domain.Identifier
+	game domain.AdvancedAggregate
+
+	player1 string
+	player2 string
+}
+
+func newExampleSuite(ID string) exampleSuite {
+	id := testdata.StringIdentifier(ID)
+	return exampleSuite{
+		ID:      id,
+		game:    aggregate.NewBase(game.NewAggregate(id), nil, nil),
+		player1: "tom@game.net",
+		player2: "jerry@game.net",
+	}
+}
+
+func (s exampleSuite) run(example exampleRunner) {
+	example(s.ID, s.game, s.player1, s.player2)
 }
