@@ -43,6 +43,8 @@ func (a *Aggregate) AggregateID() domain.Identifier {
 	return a.id
 }
 
+// CreateNewGame starts a new game.
+// If the game has already started then returns an error.
 func (a *Aggregate) CreateNewGame(c command.CreateNewGame) ([]domain.DomainEvent, error) {
 	if a.state != notCreated {
 		return nil, ErrGameIsAlreadyStarted
@@ -50,6 +52,8 @@ func (a *Aggregate) CreateNewGame(c command.CreateNewGame) ([]domain.DomainEvent
 	return []domain.DomainEvent{event.GameCreated{GameID: c.GameID}}, nil
 }
 
+// MakeMove makes a move.
+// When the second player has moved, the game is finished with a tie or a win.
 func (a *Aggregate) MakeMove(c command.MakeMove) ([]domain.DomainEvent, error) {
 	if a.playerEmail == c.PlayerEmail {
 		return nil, ErrPlayerIsTheSame

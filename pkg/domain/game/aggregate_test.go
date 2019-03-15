@@ -76,7 +76,21 @@ func TestAggregateMakeMove(t *testing.T) {
 		)
 	})
 
-	t.Run("PlayerDeclaredAWinner", func(t *testing.T) {
+	t.Run("FirstPlayerDeclaredAWinner", func(t *testing.T) {
+		ID := testdata.StringIdentifier("g777")
+		Test(t)(
+			Given(createTestAggregate(),
+				event.GameCreated{GameID: ID.String()},
+				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player1@game.com", Move: int(game.Scissors)}),
+			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Paper)}),
+			Then(
+				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Paper)},
+				event.GameWon{GameID: ID.String(), Winner: "player1@game.com", Loser: "player2@game.com"},
+			),
+		)
+	})
+
+	t.Run("SecondPlayerDeclaredAWinner", func(t *testing.T) {
 		ID := testdata.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate(),
@@ -103,7 +117,6 @@ func TestAggregateMakeMove(t *testing.T) {
 			),
 		)
 	})
-
 }
 
 func createTestAggregate() *aggregate.Base {
