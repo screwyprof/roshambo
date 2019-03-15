@@ -13,6 +13,7 @@ type state int
 const (
 	notCreated state = iota
 	created
+	waiting
 )
 
 var (
@@ -20,8 +21,11 @@ var (
 )
 
 type Aggregate struct {
-	id    domain.Identifier
-	state state
+	id domain.Identifier
+
+	state       state
+	playerEmail string
+	move        Move
 }
 
 // NewAggregate creates a new instance of Aggregate.
@@ -44,6 +48,16 @@ func (a *Aggregate) CreateNewGame(c command.CreateNewGame) ([]domain.DomainEvent
 	return []domain.DomainEvent{event.GameCreated{GameID: c.GameID}}, nil
 }
 
+func (a *Aggregate) MakeMove(c command.MakeMove) ([]domain.DomainEvent, error) {
+	return []domain.DomainEvent{event.MoveDecided{GameID: c.GameID, PlayerEmail: c.PlayerEmail, Move: c.Move}}, nil
+}
+
 func (a *Aggregate) OnGameCreated(e event.GameCreated) {
 	a.state = created
+}
+
+func (a *Aggregate) OnMoveDecided(e event.MoveDecided) {
+	a.playerEmail = e.PlayerEmail
+	a.move = Move(e.Move)
+	a.state = waiting
 }

@@ -53,6 +53,15 @@ func TestAggregate_CreateNewGame(t *testing.T) {
 			ThenFailWith(game.ErrGameIsAlreadyStarted),
 		)
 	})
+
+	t.Run("APlayerCanMakeAMove", func(t *testing.T) {
+		ID := testdata.StringIdentifier("g777")
+		Test(t)(
+			Given(createTestAggregate(), event.GameCreated{GameID: ID.String()}),
+			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player@game.com", Move: int(game.Rock)}),
+			Then(event.MoveDecided{GameID: ID.String(), PlayerEmail: "player@game.com", Move: int(game.Rock)}),
+		)
+	})
 }
 
 func createTestAggregate() *aggregate.Base {
