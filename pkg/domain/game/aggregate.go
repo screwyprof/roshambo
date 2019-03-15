@@ -18,6 +18,7 @@ const (
 
 var (
 	ErrGameIsAlreadyStarted = errors.New("game is already started")
+	ErrPlayerIsTheSame      = errors.New("the player is already in the game")
 )
 
 type Aggregate struct {
@@ -49,6 +50,9 @@ func (a *Aggregate) CreateNewGame(c command.CreateNewGame) ([]domain.DomainEvent
 }
 
 func (a *Aggregate) MakeMove(c command.MakeMove) ([]domain.DomainEvent, error) {
+	if a.playerEmail == c.PlayerEmail {
+		return nil, ErrPlayerIsTheSame
+	}
 	return []domain.DomainEvent{event.MoveDecided{GameID: c.GameID, PlayerEmail: c.PlayerEmail, Move: c.Move}}, nil
 }
 

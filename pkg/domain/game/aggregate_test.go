@@ -53,13 +53,26 @@ func TestAggregate_CreateNewGame(t *testing.T) {
 			ThenFailWith(game.ErrGameIsAlreadyStarted),
 		)
 	})
+}
 
+func TestAggregateMakeMove(t *testing.T) {
 	t.Run("APlayerCanMakeAMove", func(t *testing.T) {
 		ID := testdata.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate(), event.GameCreated{GameID: ID.String()}),
 			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player@game.com", Move: int(game.Rock)}),
 			Then(event.MoveDecided{GameID: ID.String(), PlayerEmail: "player@game.com", Move: int(game.Rock)}),
+		)
+	})
+
+	t.Run("ItFailsIfThePlayerIsTheSame", func(t *testing.T) {
+		ID := testdata.StringIdentifier("g777")
+		Test(t)(
+			Given(createTestAggregate(),
+				event.GameCreated{GameID: ID.String()},
+				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player@game.com", Move: int(game.Rock)}),
+			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player@game.com", Move: int(game.Rock)}),
+			ThenFailWith(game.ErrPlayerIsTheSame),
 		)
 	})
 }
