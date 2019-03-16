@@ -1,4 +1,4 @@
-package testfixture
+package mock
 
 import (
 	"errors"
@@ -7,33 +7,22 @@ import (
 )
 
 var (
+	// ) happens when event store can't load events.
 	ErrEventStoreCannotLoadEvents = errors.New("cannot load events")
 )
 
-// AggregateFactoryMock mocks aggregate factory.
-type AggregateFactoryMock struct {
-	Creator   func(aggregateType string, ID domain.Identifier) domain.AdvancedAggregate
-	Registrar func(factory domain.FactoryFn)
-}
-
-// RegisterAggregate registers an aggregate factory method.
-func (m *AggregateFactoryMock) RegisterAggregate(factory domain.FactoryFn) {
-	m.Registrar(factory)
-}
-
-// CreateAggregate creates an aggregate of a given type.
-func (m *AggregateFactoryMock) CreateAggregate(aggregateType string, ID domain.Identifier) domain.AdvancedAggregate {
-	return m.Creator(aggregateType, ID)
-}
-
+// EventStoreMock mocks event store.
 type EventStoreMock struct {
 	Loader func(aggregateID domain.Identifier) ([]domain.DomainEvent, error)
 	Saver  func(aggregateID domain.Identifier, version int, events []domain.DomainEvent) error
 }
 
+// LoadEventsFor implements domain.EventStore interface.
 func (m *EventStoreMock) LoadEventsFor(aggregateID domain.Identifier) ([]domain.DomainEvent, error) {
 	return m.Loader(aggregateID)
 }
+
+// StoreEventsFor implements domain.EventStore interface.
 func (m *EventStoreMock) StoreEventsFor(aggregateID domain.Identifier, version int, events []domain.DomainEvent) error {
 	return m.Saver(aggregateID, version, events)
 }

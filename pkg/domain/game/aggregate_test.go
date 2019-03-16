@@ -5,8 +5,10 @@ import (
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
+
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata"
-	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testfixture"
+	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata/fixture"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs/identifier"
 
 	"github.com/screwyprof/roshambo/pkg/command"
 	"github.com/screwyprof/roshambo/pkg/domain"
@@ -151,7 +153,7 @@ func TestAggregateMakeMove(t *testing.T) {
 }
 
 func createTestAggregate() *aggregate.Base {
-	ID := testdata.StringIdentifier("GameAgg")
+	ID := identifier.NewUUID()
 	gameAgg := game.NewAggregate(ID)
 
 	return aggregate.NewBase(gameAgg, nil, nil)

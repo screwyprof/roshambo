@@ -1,4 +1,4 @@
-package testfixture
+package fixture
 
 import (
 	"testing"

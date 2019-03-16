@@ -5,6 +5,7 @@ import "github.com/screwyprof/roshambo/pkg/domain"
 type MakeSomethingHappen struct{
 	AggID domain.Identifier
 }
+
 func (c MakeSomethingHappen) AggregateID() domain.Identifier {
 	return c.AggID
 }
