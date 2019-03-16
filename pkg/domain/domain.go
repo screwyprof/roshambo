@@ -54,15 +54,17 @@ type EventApplierFunc func(DomainEvent)
 // thus upholding the invariants (business rules) of the aggregate.
 type Aggregate interface {
 	AggregateID() Identifier
+}
 
+type Versionable interface {
 	Version() int
-	IncrementVersion(version int)
 }
 
 // AdvancedAggregate is an aggregate which handles commands
 // and applies events after it automatically
 type AdvancedAggregate interface {
 	Aggregate
+	Versionable
 	CommandHandler
 	EventApplier
 }

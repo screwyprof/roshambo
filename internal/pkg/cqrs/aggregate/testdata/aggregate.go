@@ -34,16 +34,6 @@ func (a *TestAggregate) AggregateID() domain.Identifier {
 	return a.id
 }
 
-// Version implements domain.Aggregate interface.
-func (a *TestAggregate) Version() int {
-	return a.version
-}
-
-// IncrementVersion implements domain.Aggregate interface.
-func (a *TestAggregate) IncrementVersion(version int)  {
-	a.version += version
-}
-
 func (a *TestAggregate) MakeSomethingHappen(c MakeSomethingHappen) ([]domain.DomainEvent, error) {
 	if a.alreadyHappened {
 		return nil, ErrItCanHappenOnceOnly

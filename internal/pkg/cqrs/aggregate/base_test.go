@@ -49,6 +49,14 @@ func TestBaseHandle(t *testing.T) {
 	})
 }
 
+func TestBaseVersion(t *testing.T) {
+	t.Run("ItReturnsVersion", func(t *testing.T) {
+		agg := createTestAggWithDefaultCommandHandlerAndEventApplier()
+
+		assert.Equals(t, 0, agg.Version())
+	})
+}
+
 func TestBaseApply(t *testing.T) {
 	t.Run("ItAppliesEventsAndReturnsSomeBusinessError", func(t *testing.T) {
 		Test(t)(

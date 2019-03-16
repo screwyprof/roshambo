@@ -35,23 +35,6 @@ func TestAggregateAggregateID(t *testing.T) {
 	})
 }
 
-func TestAggregateVersion(t *testing.T) {
-	t.Run("ItReturnsZeroVersion", func(t *testing.T) {
-		ID := testdata.StringIdentifier("Game")
-		agg := game.NewAggregate(ID)
-
-		assert.Equals(t, 0, agg.Version())
-	})
-
-	t.Run("ItReturnIncrementedVersion", func(t *testing.T) {
-		ID := testdata.StringIdentifier("Game")
-		agg := game.NewAggregate(ID)
-		agg.IncrementVersion(2)
-
-		assert.Equals(t, 2, agg.Version())
-	})
-}
-
 func TestAggregate_CreateNewGame(t *testing.T) {
 	t.Run("ItCreatesNewGame", func(t *testing.T) {
 		ID := testdata.StringIdentifier("g777")
