@@ -45,6 +45,11 @@ func (a *Aggregate) AggregateID() domain.Identifier {
 	return a.id
 }
 
+// AggregateType implements domain.Aggregate interface.
+func (a *Aggregate) AggregateType() string {
+	return "game.Aggregate"
+}
+
 // CreateNewGame starts a new game.
 // If the game has already started then returns an error.
 func (a *Aggregate) CreateNewGame(c command.CreateNewGame) ([]domain.DomainEvent, error) {

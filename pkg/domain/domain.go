@@ -54,6 +54,7 @@ type EventApplierFunc func(DomainEvent)
 // thus upholding the invariants (business rules) of the aggregate.
 type Aggregate interface {
 	AggregateID() Identifier
+	AggregateType() string
 }
 
 type Versionable interface {
@@ -73,4 +74,13 @@ type AdvancedAggregate interface {
 type EventStore interface {
 	LoadEventsFor(aggregateID Identifier) ([]DomainEvent, error)
 	StoreEventsFor(aggregateID Identifier, version int, events []DomainEvent) error
+}
+
+// FactoryFn aggregate factory function.
+type FactoryFn func(Identifier) AdvancedAggregate
+
+// AggregateFactory creates aggregates.
+type AggregateFactory interface {
+	RegisterAggregate(factory FactoryFn)
+	CreateAggregate(aggregateType string, ID Identifier) AdvancedAggregate
 }

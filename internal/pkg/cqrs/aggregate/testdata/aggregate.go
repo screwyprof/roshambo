@@ -21,6 +21,8 @@ func (i StringIdentifier) String() string {
 type TestAggregate struct {
 	id domain.Identifier
 	version int
+	aggType string
+
 	alreadyHappened bool
 }
 
@@ -32,6 +34,11 @@ func NewTestAggregate(ID domain.Identifier) *TestAggregate {
 // AggregateID implements domain.Aggregate interface.
 func (a *TestAggregate) AggregateID() domain.Identifier {
 	return a.id
+}
+
+// AggregateType implements domain.Aggregate interface.
+func (a *TestAggregate) AggregateType() string {
+	return "testdata.TestAggregate"
 }
 
 func (a *TestAggregate) MakeSomethingHappen(c MakeSomethingHappen) ([]domain.DomainEvent, error) {

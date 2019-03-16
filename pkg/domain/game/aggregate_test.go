@@ -35,6 +35,15 @@ func TestAggregateAggregateID(t *testing.T) {
 	})
 }
 
+func TestAggregateAggregateType(t *testing.T) {
+	t.Run("ItReturnsAggregateType", func(t *testing.T) {
+		ID := testdata.StringIdentifier("Game")
+		agg := game.NewAggregate(ID)
+
+		assert.Equals(t, "game.Aggregate", agg.AggregateType())
+	})
+}
+
 func TestAggregate_CreateNewGame(t *testing.T) {
 	t.Run("ItCreatesNewGame", func(t *testing.T) {
 		ID := testdata.StringIdentifier("g777")
