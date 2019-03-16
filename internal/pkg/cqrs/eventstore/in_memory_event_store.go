@@ -36,11 +36,7 @@ func (s *InMemoryEventStore) LoadEventsFor(aggregateID domain.Identifier) ([]dom
 func (s *InMemoryEventStore) StoreEventsFor(
 	aggregateID domain.Identifier, version int, events []domain.DomainEvent) error {
 
-	previousEvents, err := s.LoadEventsFor(aggregateID)
-	if err != nil {
-		return err
-	}
-
+	previousEvents, _ := s.LoadEventsFor(aggregateID)
 	if len(previousEvents) != version {
 		return ErrConcurrencyViolation
 	}
