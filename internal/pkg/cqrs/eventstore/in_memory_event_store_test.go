@@ -22,20 +22,34 @@ func TestNewInInMemoryEventStore(t *testing.T) {
 
 func TestInMemoryEventStoreLoadEventsFor(t *testing.T) {
 	t.Run("ItLoadsEventsForTheGivenAggregate", func(t *testing.T) {
-		// assert
+		// arrange
 		ID := testdata.StringIdentifier("TestAgg")
 		es := eventstore.NewInInMemoryEventStore()
 
 		want := []domain.DomainEvent{testdata.SomethingHappened{}}
 
-		err := es.StoreEventsFor(ID, 1, want)
+		err := es.StoreEventsFor(ID, 0, want)
 		assert.Ok(t, err)
 
 		// act
 		got, err := es.LoadEventsFor(ID)
 
-		// arrange
+		// assert
 		assert.Ok(t, err)
 		assert.Equals(t, want, got)
+	})
+}
+
+func TestInMemoryEventStoreStoreEventsFor(t *testing.T) {
+	t.Run("ItReturnsConcurrencyErrorIfVersionsAreNotTheSame", func(t *testing.T) {
+		// arrange
+		ID := testdata.StringIdentifier("TestAgg")
+		es := eventstore.NewInInMemoryEventStore()
+
+		// act
+		err := es.StoreEventsFor(ID, 1, []domain.DomainEvent{testdata.SomethingHappened{}})
+
+		// assert
+		assert.Equals(t, eventstore.ErrConcurrencyViolation, err)
 	})
 }
