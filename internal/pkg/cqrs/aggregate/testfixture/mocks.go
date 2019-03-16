@@ -1,6 +1,14 @@
 package testfixture
 
-import "github.com/screwyprof/roshambo/pkg/domain"
+import (
+	"errors"
+
+	"github.com/screwyprof/roshambo/pkg/domain"
+)
+
+var (
+	ErrEventStoreCannotLoadEvents = errors.New("cannot load events")
+)
 
 // AggregateFactoryMock mocks aggregate factory.
 type AggregateFactoryMock struct {

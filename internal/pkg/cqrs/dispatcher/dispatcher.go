@@ -31,7 +31,10 @@ func NewDispatcher(eventStore domain.EventStore, aggregateFactory domain.Aggrega
 func (d *Dispatcher) Handle(c domain.Command) ([]domain.DomainEvent, error) {
 	_ = d.aggregateFactory.CreateAggregate(c.AggregateType(), c.AggregateID())
 
-	_, _ = d.eventStore.LoadEventsFor(c.AggregateID())
+	_, err := d.eventStore.LoadEventsFor(c.AggregateID())
+	if err != nil {
+		return nil, err
+	}
 
 	return nil, nil
 }

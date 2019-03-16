@@ -37,21 +37,8 @@ func TestNewDispatcherHandle(t *testing.T) {
 		aggID := testdata.StringIdentifier("TestAgg")
 		agg := aggregate.NewBase(testdata.NewTestAggregate(aggID), nil, nil)
 
-		eventStore := &testfixture.EventStoreMock{
-			Loader: func(aggregateID domain.Identifier) ([]domain.DomainEvent, error) {
-				assert.True(t, true)
-				return []domain.DomainEvent{testdata.SomethingHappened{}}, nil
-			},
-		}
-
-		aggFactory := &testfixture.AggregateFactoryMock{
-			Creator: func(aggregateType string, ID domain.Identifier) domain.AdvancedAggregate {
-				// assert
-				assert.Equals(t, aggID, ID)
-				assert.Equals(t, agg.AggregateType(), aggregateType)
-				return agg
-			},
-		}
+		eventStore := createEventStoreMock(t)
+		aggFactory := createAggFactoryMock(t, agg)
 
 		d := dispatcher.NewDispatcher(eventStore, aggFactory)
 
@@ -67,18 +54,8 @@ func TestNewDispatcherHandle(t *testing.T) {
 		aggID := testdata.StringIdentifier("TestAgg")
 		agg := aggregate.NewBase(testdata.NewTestAggregate(aggID), nil, nil)
 
-		eventStore := &testfixture.EventStoreMock{
-			Loader: func(aggregateID domain.Identifier) ([]domain.DomainEvent, error) {
-				assert.True(t, true)
-				return []domain.DomainEvent{testdata.SomethingHappened{}}, nil
-			},
-		}
-
-		aggFactory := &testfixture.AggregateFactoryMock{
-			Creator: func(aggregateType string, ID domain.Identifier) domain.AdvancedAggregate {
-				return agg
-			},
-		}
+		eventStore := createEventStoreMock(t)
+		aggFactory := createAggFactoryMock(t, agg)
 
 		d := dispatcher.NewDispatcher(eventStore, aggFactory)
 
@@ -88,4 +65,52 @@ func TestNewDispatcherHandle(t *testing.T) {
 		// assert
 		assert.Ok(t, err)
 	})
+
+	t.Run("ItFailsIfItCannotLoadEventsForAggregate", func(t *testing.T) {
+		// arrange
+		aggID := testdata.StringIdentifier("TestAgg")
+		agg := aggregate.NewBase(testdata.NewTestAggregate(aggID), nil, nil)
+
+		eventStore := createEventStoreMockWithError(t, testfixture.ErrEventStoreCannotLoadEvents)
+		aggFactory := createAggFactoryMock(t, agg)
+
+		d := dispatcher.NewDispatcher(eventStore, aggFactory)
+
+		// act
+		_, err := d.Handle(testdata.MakeSomethingHappen{AggID: aggID})
+
+		// assert
+		assert.Equals(t, testfixture.ErrEventStoreCannotLoadEvents, err)
+	})
+}
+
+func createAggFactoryMock(t *testing.T, agg *aggregate.Base) *testfixture.AggregateFactoryMock {
+	aggFactory := &testfixture.AggregateFactoryMock{
+		Creator: func(aggregateType string, ID domain.Identifier) domain.AdvancedAggregate {
+			assert.Equals(t, agg.AggregateID(), ID)
+			assert.Equals(t, agg.AggregateType(), aggregateType)
+			return agg
+		},
+	}
+	return aggFactory
+}
+
+func createEventStoreMock(t *testing.T) *testfixture.EventStoreMock {
+	eventStore := &testfixture.EventStoreMock{
+		Loader: func(aggregateID domain.Identifier) ([]domain.DomainEvent, error) {
+			assert.True(t, true)
+			return []domain.DomainEvent{testdata.SomethingHappened{}}, nil
+		},
+	}
+	return eventStore
+}
+
+func createEventStoreMockWithError(t *testing.T, err error) *testfixture.EventStoreMock {
+	eventStore := &testfixture.EventStoreMock{
+		Loader: func(aggregateID domain.Identifier) ([]domain.DomainEvent, error) {
+			assert.True(t, true)
+			return nil, err
+		},
+	}
+	return eventStore
 }
