@@ -36,7 +36,10 @@ func (d *Dispatcher) Handle(c domain.Command) ([]domain.DomainEvent, error) {
 		return nil, err
 	}
 
-	_ = agg.Apply(loadedEvents...)
+	err = agg.Apply(loadedEvents...)
+	if err != nil {
+		return nil, err
+	}
 
 	return nil, nil
 }

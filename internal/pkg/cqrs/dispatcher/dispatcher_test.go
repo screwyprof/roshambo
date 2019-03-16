@@ -100,6 +100,25 @@ func TestNewDispatcherHandle(t *testing.T) {
 		assert.Ok(t, err)
 		assert.Equals(t, agg.Version(), 1)
 	})
+
+	t.Run("ItFailsIfItCannotApplyEvents", func(t *testing.T) {
+		// arrange
+		aggID := testdata.StringIdentifier("TestAgg")
+		agg := aggregate.NewBase(
+			testdata.NewTestAggregate(aggID),
+			nil, aggregate.NewStaticEventApplier())
+
+		eventStore := createEventStoreMock(t)
+		aggFactory := createAggFactoryMock(t, agg)
+
+		d := dispatcher.NewDispatcher(eventStore, aggFactory)
+
+		// act
+		_, err := d.Handle(testdata.MakeSomethingHappen{AggID: aggID})
+
+		// assert
+		assert.Equals(t, testdata.ErrOnSomethingHappenedApplierNotFound, err)
+	})
 }
 
 func createAggFactoryMock(t *testing.T, agg *aggregate.Base) *testfixture.AggregateFactoryMock {
