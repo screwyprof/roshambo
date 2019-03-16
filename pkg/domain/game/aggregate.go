@@ -56,7 +56,7 @@ func (a *Aggregate) CreateNewGame(c command.CreateNewGame) ([]domain.DomainEvent
 	if a.state != notCreated {
 		return nil, ErrGameIsAlreadyStarted
 	}
-	return []domain.DomainEvent{event.GameCreated{GameID: c.GameID}}, nil
+	return []domain.DomainEvent{event.GameCreated{GameID: c.GameID.String()}}, nil
 }
 
 // MakeMove makes a move.
@@ -70,11 +70,11 @@ func (a *Aggregate) MakeMove(c command.MakeMove) ([]domain.DomainEvent, error) {
 	case a.playerEmail == c.PlayerEmail:
 		return nil, ErrPlayerIsTheSame
 	case a.state == created:
-		return []domain.DomainEvent{event.MoveDecided{GameID: c.GameID, PlayerEmail: c.PlayerEmail, Move: c.Move}}, nil
+		return []domain.DomainEvent{event.MoveDecided{GameID: c.GameID.String(), PlayerEmail: c.PlayerEmail, Move: c.Move}}, nil
 	case a.state == waiting:
 		return []domain.DomainEvent{
-			event.MoveDecided{GameID: c.GameID, PlayerEmail: c.PlayerEmail, Move: c.Move},
-			a.finish(c.GameID, c.PlayerEmail, NewMove(c.Move)),
+			event.MoveDecided{GameID: c.GameID.String(), PlayerEmail: c.PlayerEmail, Move: c.Move},
+			a.finish(c.GameID.String(), c.PlayerEmail, NewMove(c.Move)),
 		}, nil
 	default:
 		return nil, ErrTheGameHaveNotStartedOrFinished

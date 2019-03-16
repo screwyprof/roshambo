@@ -29,5 +29,6 @@ func NewDispatcher(eventStore domain.EventStore, aggregateFactory domain.Aggrega
 }
 
 func (d *Dispatcher) Handle(c domain.Command) ([]domain.DomainEvent, error) {
+	_ = d.aggregateFactory.CreateAggregate(c.AggregateType(), c.AggregateID())
 	return nil, nil
 }

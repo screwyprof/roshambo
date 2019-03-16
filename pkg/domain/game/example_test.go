@@ -14,9 +14,9 @@ import (
 func ExampleVictory() {
 	suite := newExampleSuite("TheGame")
 	suite.run(func(ID domain.Identifier, agg domain.AdvancedAggregate, player1, player2 string) {
-		agg.Handle(command.CreateNewGame{GameID: ID.String()})
-		agg.Handle(command.MakeMove{GameID: ID.String(), PlayerEmail: player1, Move: int(game.Rock)})
-		events, _ := agg.Handle(command.MakeMove{GameID: ID.String(), PlayerEmail: player2, Move: int(game.Paper)})
+		agg.Handle(command.CreateNewGame{GameID: ID})
+		agg.Handle(command.MakeMove{GameID: ID, PlayerEmail: player1, Move: int(game.Rock)})
+		events, _ := agg.Handle(command.MakeMove{GameID: ID, PlayerEmail: player2, Move: int(game.Paper)})
 
 		fmt.Printf("%#v", events[1])
 	})
@@ -28,9 +28,9 @@ func ExampleVictory() {
 func ExampleTie() {
 	suite := newExampleSuite("TieGame")
 	suite.run(func(ID domain.Identifier, agg domain.AdvancedAggregate, player1, player2 string) {
-		agg.Handle(command.CreateNewGame{GameID: ID.String()})
-		agg.Handle(command.MakeMove{GameID: ID.String(), PlayerEmail: player1, Move: int(game.Rock)})
-		events, _ := agg.Handle(command.MakeMove{GameID: ID.String(), PlayerEmail: player2, Move: int(game.Rock)})
+		agg.Handle(command.CreateNewGame{GameID: ID})
+		agg.Handle(command.MakeMove{GameID: ID, PlayerEmail: player1, Move: int(game.Rock)})
+		events, _ := agg.Handle(command.MakeMove{GameID: ID, PlayerEmail: player2, Move: int(game.Rock)})
 
 		fmt.Printf("%#v", events[1])
 	})

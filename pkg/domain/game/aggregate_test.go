@@ -49,7 +49,7 @@ func TestAggregate_CreateNewGame(t *testing.T) {
 		ID := testdata.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate()),
-			When(command.CreateNewGame{GameID: ID.String()}),
+			When(command.CreateNewGame{GameID: ID}),
 			Then(event.GameCreated{GameID: ID.String()}),
 		)
 	})
@@ -58,7 +58,7 @@ func TestAggregate_CreateNewGame(t *testing.T) {
 		ID := testdata.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate(), event.GameCreated{GameID: ID.String()}),
-			When(command.CreateNewGame{GameID: ID.String()}),
+			When(command.CreateNewGame{GameID: ID}),
 			ThenFailWith(game.ErrGameIsAlreadyStarted),
 		)
 	})
@@ -69,7 +69,7 @@ func TestAggregateMakeMove(t *testing.T) {
 		ID := testdata.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate(), event.GameCreated{GameID: ID.String()}),
-			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player@game.com", Move: int(game.Rock)}),
+			When(command.MakeMove{GameID: ID, PlayerEmail: "player@game.com", Move: int(game.Rock)}),
 			Then(event.MoveDecided{GameID: ID.String(), PlayerEmail: "player@game.com", Move: int(game.Rock)}),
 		)
 	})
@@ -80,7 +80,7 @@ func TestAggregateMakeMove(t *testing.T) {
 			Given(createTestAggregate(),
 				event.GameCreated{GameID: ID.String()},
 				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player@game.com", Move: int(game.Rock)}),
-			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player@game.com", Move: int(game.Rock)}),
+			When(command.MakeMove{GameID: ID, PlayerEmail: "player@game.com", Move: int(game.Rock)}),
 			ThenFailWith(game.ErrPlayerIsTheSame),
 		)
 	})
@@ -89,7 +89,7 @@ func TestAggregateMakeMove(t *testing.T) {
 		ID := testdata.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate()),
-			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player@game.com", Move: int(game.Rock)}),
+			When(command.MakeMove{GameID: ID, PlayerEmail: "player@game.com", Move: int(game.Rock)}),
 			ThenFailWith(game.ErrTheGameHaveNotStartedOrFinished),
 		)
 	})
@@ -100,7 +100,7 @@ func TestAggregateMakeMove(t *testing.T) {
 			Given(createTestAggregate(),
 				event.GameCreated{GameID: ID.String()},
 				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player1@game.com", Move: int(game.Scissors)}),
-			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Paper)}),
+			When(command.MakeMove{GameID: ID, PlayerEmail: "player2@game.com", Move: int(game.Paper)}),
 			Then(
 				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Paper)},
 				event.GameWon{GameID: ID.String(), Winner: "player1@game.com", Loser: "player2@game.com"},
@@ -116,7 +116,7 @@ func TestAggregateMakeMove(t *testing.T) {
 				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player1@game.com", Move: int(game.Rock)},
 				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Rock)},
 				event.GameTied{GameID: ID.String()}),
-			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "another@game.com", Move: int(game.Paper)}),
+			When(command.MakeMove{GameID: ID, PlayerEmail: "another@game.com", Move: int(game.Paper)}),
 			ThenFailWith(game.ErrTheGameHaveNotStartedOrFinished),
 		)
 	})
@@ -127,7 +127,7 @@ func TestAggregateMakeMove(t *testing.T) {
 			Given(createTestAggregate(),
 				event.GameCreated{GameID: ID.String()},
 				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player1@game.com", Move: int(game.Rock)}),
-			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Paper)}),
+			When(command.MakeMove{GameID: ID, PlayerEmail: "player2@game.com", Move: int(game.Paper)}),
 			Then(
 				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Paper)},
 				event.GameWon{GameID: ID.String(), Winner: "player2@game.com", Loser: "player1@game.com"},
@@ -141,7 +141,7 @@ func TestAggregateMakeMove(t *testing.T) {
 			Given(createTestAggregate(),
 				event.GameCreated{GameID: ID.String()},
 				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player1@game.com", Move: int(game.Scissors)}),
-			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Scissors)}),
+			When(command.MakeMove{GameID: ID, PlayerEmail: "player2@game.com", Move: int(game.Scissors)}),
 			Then(
 				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Scissors)},
 				event.GameTied{GameID: ID.String()},

@@ -12,6 +12,8 @@ type Identifier interface {
 // People request changes to the domain by sending commands.
 // Command are named with a verb in the imperative mood, for example ConfirmOrder.
 type Command interface {
+	AggregateID() Identifier
+	AggregateType() string
 	CommandType() string
 }
 
