@@ -1,2 +1,3 @@
 internal/pkg/assert/**
-mock/
+internal/pkg/cqrs/aggregate/mock
+internal/pkg/cqrs/eventstore/mock
