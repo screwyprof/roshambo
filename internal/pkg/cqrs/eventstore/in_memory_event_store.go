@@ -8,6 +8,7 @@ import (
 )
 
 var (
+	// ErrConcurrencyViolation happens if aggregate has been modified concurrently.
 	ErrConcurrencyViolation = errors.New("concurrency error: aggregate versions differ")
 )
 
