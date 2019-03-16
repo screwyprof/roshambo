@@ -56,10 +56,21 @@ type Aggregate interface {
 	AggregateID() Identifier
 }
 
+type Versionable interface {
+	Version() int
+}
+
 // AdvancedAggregate is an aggregate which handles commands
 // and applies events after it automatically
 type AdvancedAggregate interface {
 	Aggregate
+	Versionable
 	CommandHandler
 	EventApplier
+}
+
+// EventStore stores and loads events.
+type EventStore interface {
+	LoadEventsFor(aggregateID Identifier) ([]DomainEvent, error)
+	StoreEventsFor(aggregateID Identifier, version int, events []DomainEvent) error
 }

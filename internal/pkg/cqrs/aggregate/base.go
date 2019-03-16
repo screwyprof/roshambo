@@ -19,6 +19,8 @@ type eventApplier interface {
 // Base implements a basic aggregate root.
 type Base struct {
 	domain.Aggregate
+	version int
+
 	commandHandler commandHandler
 	eventApplier   eventApplier
 }
@@ -47,6 +49,11 @@ func NewBase(pureAgg domain.Aggregate, handler commandHandler, applier eventAppl
 	}
 }
 
+// Version implements domain.Versionable interface.
+func (b *Base) Version() int {
+	return b.version
+}
+
 // Handle implements domain.CommandHandler.
 func (b *Base) Handle(c domain.Command) ([]domain.DomainEvent, error) {
 	events, err := b.commandHandler.Handle(c)
@@ -63,5 +70,9 @@ func (b *Base) Handle(c domain.Command) ([]domain.DomainEvent, error) {
 
 // Apply implements domain.EventApplier interface.
 func (b *Base) Apply(e ...domain.DomainEvent) error {
-	return b.eventApplier.Apply(e...)
+	if err := b.eventApplier.Apply(e...); err != nil {
+		return err
+	}
+	b.version += len(e)
+	return nil
 }

@@ -20,6 +20,7 @@ func (i StringIdentifier) String() string {
 // TestAggregate a pure aggregate (has no external dependencies or dark magic method) used for testing.
 type TestAggregate struct {
 	id domain.Identifier
+	version int
 	alreadyHappened bool
 }
 
