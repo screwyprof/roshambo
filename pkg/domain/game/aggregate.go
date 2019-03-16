@@ -25,7 +25,8 @@ var (
 )
 
 type Aggregate struct {
-	id domain.Identifier
+	id      domain.Identifier
+	version int
 
 	state       state
 	playerEmail string
@@ -43,6 +44,16 @@ func NewAggregate(ID domain.Identifier) *Aggregate {
 // AggregateID implements domain.Aggregate interface.
 func (a *Aggregate) AggregateID() domain.Identifier {
 	return a.id
+}
+
+// Version implements domain.Aggregate interface.
+func (a *Aggregate) Version() int {
+	return a.version
+}
+
+// IncrementVersion implements domain.Aggregate interface.
+func (a *Aggregate) IncrementVersion(version int) {
+	a.version += version
 }
 
 // CreateNewGame starts a new game.

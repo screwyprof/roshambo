@@ -65,6 +65,15 @@ func TestBaseApply(t *testing.T) {
 			ThenFailWith(testdata.ErrOnSomethingHappenedApplierNotFound),
 		)
 	})
+
+	t.Run("ItIncrementsVersion", func(t *testing.T) {
+		agg := createTestAggWithEmptyCommandHandler()
+
+		err := agg.Apply(testdata.SomethingHappened{})
+
+		assert.Ok(t, err)
+		assert.Equals(t, 1, agg.Version())
+	})
 }
 
 func createTestAggWithDefaultCommandHandlerAndEventApplier() *aggregate.Base {

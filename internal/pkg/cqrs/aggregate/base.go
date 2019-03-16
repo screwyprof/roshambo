@@ -63,5 +63,9 @@ func (b *Base) Handle(c domain.Command) ([]domain.DomainEvent, error) {
 
 // Apply implements domain.EventApplier interface.
 func (b *Base) Apply(e ...domain.DomainEvent) error {
-	return b.eventApplier.Apply(e...)
+	if err := b.eventApplier.Apply(e...); err != nil {
+		return err
+	}
+	b.Aggregate.IncrementVersion(len(e))
+	return nil
 }

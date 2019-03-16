@@ -20,6 +20,7 @@ func (i StringIdentifier) String() string {
 // TestAggregate a pure aggregate (has no external dependencies or dark magic method) used for testing.
 type TestAggregate struct {
 	id domain.Identifier
+	version int
 	alreadyHappened bool
 }
 
@@ -31,6 +32,16 @@ func NewTestAggregate(ID domain.Identifier) *TestAggregate {
 // AggregateID implements domain.Aggregate interface.
 func (a *TestAggregate) AggregateID() domain.Identifier {
 	return a.id
+}
+
+// Version implements domain.Aggregate interface.
+func (a *TestAggregate) Version() int {
+	return a.version
+}
+
+// IncrementVersion implements domain.Aggregate interface.
+func (a *TestAggregate) IncrementVersion(version int)  {
+	a.version += version
 }
 
 func (a *TestAggregate) MakeSomethingHappen(c MakeSomethingHappen) ([]domain.DomainEvent, error) {
