@@ -1,6 +1,8 @@
 package dispatcher
 
-import "github.com/screwyprof/roshambo/pkg/domain"
+import (
+	"github.com/screwyprof/roshambo/pkg/domain"
+)
 
 // Dispatcher is a basic message dispatcher.
 //
@@ -37,6 +39,11 @@ func (d *Dispatcher) Handle(c domain.Command) ([]domain.DomainEvent, error) {
 	}
 
 	err = agg.Apply(loadedEvents...)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = agg.Handle(c)
 	if err != nil {
 		return nil, err
 	}

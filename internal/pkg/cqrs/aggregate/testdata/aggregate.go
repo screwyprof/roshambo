@@ -51,3 +51,7 @@ func (a *TestAggregate) MakeSomethingHappen(c MakeSomethingHappen) ([]domain.Dom
 func (a *TestAggregate) OnSomethingHappened(e SomethingHappened) {
 	a.alreadyHappened = true
 }
+
+func (a *TestAggregate) OnSomethingElseHappened(e SomethingElseHappened) {
+
+}
