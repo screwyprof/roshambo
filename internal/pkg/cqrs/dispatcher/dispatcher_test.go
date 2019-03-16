@@ -82,6 +82,24 @@ func TestNewDispatcherHandle(t *testing.T) {
 		// assert
 		assert.Equals(t, testfixture.ErrEventStoreCannotLoadEvents, err)
 	})
+
+	t.Run("ItAppliesTheLoadedEventsToTheCreatedAggregate", func(t *testing.T) {
+		// arrange
+		aggID := testdata.StringIdentifier("TestAgg")
+		agg := aggregate.NewBase(testdata.NewTestAggregate(aggID), nil, nil)
+
+		eventStore := createEventStoreMock(t)
+		aggFactory := createAggFactoryMock(t, agg)
+
+		d := dispatcher.NewDispatcher(eventStore, aggFactory)
+
+		// act
+		_, err := d.Handle(testdata.MakeSomethingHappen{AggID: aggID})
+
+		// assert
+		assert.Ok(t, err)
+		assert.Equals(t, agg.Version(), 1)
+	})
 }
 
 func createAggFactoryMock(t *testing.T, agg *aggregate.Base) *testfixture.AggregateFactoryMock {

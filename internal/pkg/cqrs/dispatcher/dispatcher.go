@@ -29,12 +29,14 @@ func NewDispatcher(eventStore domain.EventStore, aggregateFactory domain.Aggrega
 }
 
 func (d *Dispatcher) Handle(c domain.Command) ([]domain.DomainEvent, error) {
-	_ = d.aggregateFactory.CreateAggregate(c.AggregateType(), c.AggregateID())
+	agg := d.aggregateFactory.CreateAggregate(c.AggregateType(), c.AggregateID())
 
-	_, err := d.eventStore.LoadEventsFor(c.AggregateID())
+	loadedEvents, err := d.eventStore.LoadEventsFor(c.AggregateID())
 	if err != nil {
 		return nil, err
 	}
+
+	_ = agg.Apply(loadedEvents...)
 
 	return nil, nil
 }
