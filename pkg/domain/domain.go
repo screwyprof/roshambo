@@ -12,6 +12,8 @@ type Identifier interface {
 // People request changes to the domain by sending commands.
 // Command are named with a verb in the imperative mood, for example ConfirmOrder.
 type Command interface {
+	AggregateID() Identifier
+	AggregateType() string
 	CommandType() string
 }
 
@@ -54,6 +56,7 @@ type EventApplierFunc func(DomainEvent)
 // thus upholding the invariants (business rules) of the aggregate.
 type Aggregate interface {
 	AggregateID() Identifier
+	AggregateType() string
 }
 
 type Versionable interface {
@@ -73,4 +76,13 @@ type AdvancedAggregate interface {
 type EventStore interface {
 	LoadEventsFor(aggregateID Identifier) ([]DomainEvent, error)
 	StoreEventsFor(aggregateID Identifier, version int, events []DomainEvent) error
+}
+
+// FactoryFn aggregate factory function.
+type FactoryFn func(Identifier) AdvancedAggregate
+
+// AggregateFactory creates aggregates.
+type AggregateFactory interface {
+	RegisterAggregate(factory FactoryFn)
+	CreateAggregate(aggregateType string, ID Identifier) (AdvancedAggregate, error)
 }

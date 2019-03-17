@@ -5,8 +5,9 @@ import (
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
-	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata"
-	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testfixture"
+
+	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata/fixture"
+	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
 
 	"github.com/screwyprof/roshambo/pkg/domain"
 )
@@ -27,24 +28,24 @@ func TestBaseHandle(t *testing.T) {
 	t.Run("ItUsesCustomCommandHandlerAndEventApplierWhenProvided", func(t *testing.T) {
 		Test(t)(
 			Given(createTestAggregateWithCustomCommandHandlerAndEventApplier()),
-			When(testdata.MakeSomethingHappen{}),
-			Then(testdata.SomethingHappened{}),
+			When(MakeSomethingHappen{}),
+			Then(SomethingHappened{}),
 		)
 	})
 
 	t.Run("ItReturnsAnErrorIfTheHandlerIsNotFound", func(t *testing.T) {
 		Test(t)(
 			Given(createTestAggWithEmptyCommandHandler()),
-			When(testdata.MakeSomethingHappen{}),
-			ThenFailWith(testdata.ErrMakeSomethingHandlerNotFound),
+			When(MakeSomethingHappen{}),
+			ThenFailWith(ErrMakeSomethingHandlerNotFound),
 		)
 	})
 
 	t.Run("ItReturnsAnErrorIfTheEventAppliersNotFound", func(t *testing.T) {
 		Test(t)(
 			Given(createTestAggWithEmptyEventApplier()),
-			When(testdata.MakeSomethingHappen{}),
-			ThenFailWith(testdata.ErrOnSomethingHappenedApplierNotFound),
+			When(MakeSomethingHappen{}),
+			ThenFailWith(ErrOnSomethingHappenedApplierNotFound),
 		)
 	})
 }
@@ -60,24 +61,24 @@ func TestBaseVersion(t *testing.T) {
 func TestBaseApply(t *testing.T) {
 	t.Run("ItAppliesEventsAndReturnsSomeBusinessError", func(t *testing.T) {
 		Test(t)(
-			Given(createTestAggWithDefaultCommandHandlerAndEventApplier(), testdata.SomethingHappened{}),
-			When(testdata.MakeSomethingHappen{}),
-			ThenFailWith(testdata.ErrItCanHappenOnceOnly),
+			Given(createTestAggWithDefaultCommandHandlerAndEventApplier(), SomethingHappened{}),
+			When(MakeSomethingHappen{}),
+			ThenFailWith(ErrItCanHappenOnceOnly),
 		)
 	})
 
 	t.Run("ItReturnsAnErrorIfTheEventAppliersNotFound", func(t *testing.T) {
 		Test(t)(
-			Given(createTestAggWithEmptyEventApplier(), testdata.SomethingHappened{}),
-			When(testdata.MakeSomethingHappen{}),
-			ThenFailWith(testdata.ErrOnSomethingHappenedApplierNotFound),
+			Given(createTestAggWithEmptyEventApplier(), SomethingHappened{}),
+			When(MakeSomethingHappen{}),
+			ThenFailWith(ErrOnSomethingHappenedApplierNotFound),
 		)
 	})
 
 	t.Run("ItIncrementsVersion", func(t *testing.T) {
 		agg := createTestAggWithEmptyCommandHandler()
 
-		err := agg.Apply(testdata.SomethingHappened{})
+		err := agg.Apply(SomethingHappened{})
 
 		assert.Ok(t, err)
 		assert.Equals(t, 1, agg.Version())
@@ -85,47 +86,45 @@ func TestBaseApply(t *testing.T) {
 }
 
 func createTestAggWithDefaultCommandHandlerAndEventApplier() *aggregate.Base {
-	ID := testdata.StringIdentifier("TestAgg1")
-	pureAgg := testdata.NewTestAggregate(ID)
+	ID := StringIdentifier("TestAgg1")
+	pureAgg := NewTestAggregate(ID)
 
 	return aggregate.NewBase(pureAgg, nil, nil)
 }
 
 func createTestAggregateWithCustomCommandHandlerAndEventApplier() *aggregate.Base {
-	ID := testdata.StringIdentifier("TestAgg1")
-	a := testdata.NewTestAggregate(ID)
+	ID := StringIdentifier("TestAgg1")
+	a := NewTestAggregate(ID)
 
 	return aggregate.NewBase(a, createCommandHandler(a), createEventApplier(a))
 }
 
 func createTestAggWithEmptyCommandHandler() *aggregate.Base {
-	ID := testdata.StringIdentifier("TestAgg1")
-	pureAgg := testdata.NewTestAggregate(ID)
+	ID := StringIdentifier("TestAgg1")
+	pureAgg := NewTestAggregate(ID)
 
 	return aggregate.NewBase(pureAgg, aggregate.NewStaticCommandHandler(), nil)
 }
 
 func createTestAggWithEmptyEventApplier() *aggregate.Base {
-	ID := testdata.StringIdentifier("TestAgg1")
-	pureAgg := testdata.NewTestAggregate(ID)
+	ID := StringIdentifier("TestAgg1")
+	pureAgg := NewTestAggregate(ID)
 
 	return aggregate.NewBase(pureAgg, nil, aggregate.NewStaticEventApplier())
 }
 
-func createEventApplier(pureAgg *testdata.TestAggregate) *aggregate.StaticEventApplier {
+func createEventApplier(pureAgg *TestAggregate) *aggregate.StaticEventApplier {
 	eventApplier := aggregate.NewStaticEventApplier()
 	eventApplier.RegisterApplier("OnSomethingHappened", func(e domain.DomainEvent) {
-		pureAgg.OnSomethingHappened(e.(testdata.SomethingHappened))
-	},
-	)
+		pureAgg.OnSomethingHappened(e.(SomethingHappened))
+	})
 	return eventApplier
 }
 
-func createCommandHandler(pureAgg *testdata.TestAggregate) *aggregate.StaticCommandHandler {
+func createCommandHandler(pureAgg *TestAggregate) *aggregate.StaticCommandHandler {
 	commandHandler := aggregate.NewStaticCommandHandler()
 	commandHandler.RegisterHandler("MakeSomethingHappen", func(c domain.Command) ([]domain.DomainEvent, error) {
-		return pureAgg.MakeSomethingHappen(c.(testdata.MakeSomethingHappen))
-	},
-	)
+		return pureAgg.MakeSomethingHappen(c.(MakeSomethingHappen))
+	})
 	return commandHandler
 }

@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
-	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/eventstore"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
 
 	"github.com/screwyprof/roshambo/pkg/domain"
 )
@@ -23,10 +23,10 @@ func TestNewInInMemoryEventStore(t *testing.T) {
 func TestInMemoryEventStoreLoadEventsFor(t *testing.T) {
 	t.Run("ItLoadsEventsForTheGivenAggregate", func(t *testing.T) {
 		// arrange
-		ID := testdata.StringIdentifier("TestAgg")
+		ID := mock.StringIdentifier("TestAgg")
 		es := eventstore.NewInInMemoryEventStore()
 
-		want := []domain.DomainEvent{testdata.SomethingHappened{}}
+		want := []domain.DomainEvent{mock.SomethingHappened{}}
 
 		err := es.StoreEventsFor(ID, 0, want)
 		assert.Ok(t, err)
@@ -43,11 +43,11 @@ func TestInMemoryEventStoreLoadEventsFor(t *testing.T) {
 func TestInMemoryEventStoreStoreEventsFor(t *testing.T) {
 	t.Run("ItReturnsConcurrencyErrorIfVersionsAreNotTheSame", func(t *testing.T) {
 		// arrange
-		ID := testdata.StringIdentifier("TestAgg")
+		ID := mock.StringIdentifier("TestAgg")
 		es := eventstore.NewInInMemoryEventStore()
 
 		// act
-		err := es.StoreEventsFor(ID, 1, []domain.DomainEvent{testdata.SomethingHappened{}})
+		err := es.StoreEventsFor(ID, 1, []domain.DomainEvent{mock.SomethingHappened{}})
 
 		// assert
 		assert.Equals(t, eventstore.ErrConcurrencyViolation, err)

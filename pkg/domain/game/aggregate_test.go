@@ -3,10 +3,12 @@ package game_test
 import (
 	"testing"
 
+	"github.com/segmentio/ksuid"
+
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
-	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata"
-	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testfixture"
+	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata/fixture"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
 
 	"github.com/screwyprof/roshambo/pkg/command"
 	"github.com/screwyprof/roshambo/pkg/domain"
@@ -28,28 +30,37 @@ func TestNewAggregate(t *testing.T) {
 
 func TestAggregateAggregateID(t *testing.T) {
 	t.Run("ItReturnsAggregateID", func(t *testing.T) {
-		ID := testdata.StringIdentifier("Game")
+		ID := mock.StringIdentifier("Game")
 		agg := game.NewAggregate(ID)
 
 		assert.Equals(t, ID, agg.AggregateID())
 	})
 }
 
+func TestAggregateAggregateType(t *testing.T) {
+	t.Run("ItReturnsAggregateType", func(t *testing.T) {
+		ID := mock.StringIdentifier("Game")
+		agg := game.NewAggregate(ID)
+
+		assert.Equals(t, "game.Aggregate", agg.AggregateType())
+	})
+}
+
 func TestAggregate_CreateNewGame(t *testing.T) {
 	t.Run("ItCreatesNewGame", func(t *testing.T) {
-		ID := testdata.StringIdentifier("g777")
+		ID := mock.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate()),
-			When(command.CreateNewGame{GameID: ID.String()}),
+			When(command.CreateNewGame{GameID: ID}),
 			Then(event.GameCreated{GameID: ID.String()}),
 		)
 	})
 
 	t.Run("ItCannotStartANewGameIfItTheGameIsAlreadyStarted", func(t *testing.T) {
-		ID := testdata.StringIdentifier("g777")
+		ID := mock.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate(), event.GameCreated{GameID: ID.String()}),
-			When(command.CreateNewGame{GameID: ID.String()}),
+			When(command.CreateNewGame{GameID: ID}),
 			ThenFailWith(game.ErrGameIsAlreadyStarted),
 		)
 	})
@@ -57,41 +68,41 @@ func TestAggregate_CreateNewGame(t *testing.T) {
 
 func TestAggregateMakeMove(t *testing.T) {
 	t.Run("APlayerCanMakeAMove", func(t *testing.T) {
-		ID := testdata.StringIdentifier("g777")
+		ID := mock.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate(), event.GameCreated{GameID: ID.String()}),
-			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player@game.com", Move: int(game.Rock)}),
+			When(command.MakeMove{GameID: ID, PlayerEmail: "player@game.com", Move: int(game.Rock)}),
 			Then(event.MoveDecided{GameID: ID.String(), PlayerEmail: "player@game.com", Move: int(game.Rock)}),
 		)
 	})
 
 	t.Run("ItFailsIfThePlayerIsTheSame", func(t *testing.T) {
-		ID := testdata.StringIdentifier("g777")
+		ID := mock.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate(),
 				event.GameCreated{GameID: ID.String()},
 				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player@game.com", Move: int(game.Rock)}),
-			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player@game.com", Move: int(game.Rock)}),
+			When(command.MakeMove{GameID: ID, PlayerEmail: "player@game.com", Move: int(game.Rock)}),
 			ThenFailWith(game.ErrPlayerIsTheSame),
 		)
 	})
 
 	t.Run("ItFailsIfTheGameHaveNotStarted", func(t *testing.T) {
-		ID := testdata.StringIdentifier("g777")
+		ID := mock.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate()),
-			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player@game.com", Move: int(game.Rock)}),
+			When(command.MakeMove{GameID: ID, PlayerEmail: "player@game.com", Move: int(game.Rock)}),
 			ThenFailWith(game.ErrTheGameHaveNotStartedOrFinished),
 		)
 	})
 
 	t.Run("FirstPlayerDeclaredAWinner", func(t *testing.T) {
-		ID := testdata.StringIdentifier("g777")
+		ID := mock.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate(),
 				event.GameCreated{GameID: ID.String()},
 				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player1@game.com", Move: int(game.Scissors)}),
-			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Paper)}),
+			When(command.MakeMove{GameID: ID, PlayerEmail: "player2@game.com", Move: int(game.Paper)}),
 			Then(
 				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Paper)},
 				event.GameWon{GameID: ID.String(), Winner: "player1@game.com", Loser: "player2@game.com"},
@@ -100,25 +111,25 @@ func TestAggregateMakeMove(t *testing.T) {
 	})
 
 	t.Run("ItFailsIfTheMoveIsMadeAfterTheGameIsFinished", func(t *testing.T) {
-		ID := testdata.StringIdentifier("g777")
+		ID := mock.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate(),
 				event.GameCreated{GameID: ID.String()},
 				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player1@game.com", Move: int(game.Rock)},
 				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Rock)},
 				event.GameTied{GameID: ID.String()}),
-			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "another@game.com", Move: int(game.Paper)}),
+			When(command.MakeMove{GameID: ID, PlayerEmail: "another@game.com", Move: int(game.Paper)}),
 			ThenFailWith(game.ErrTheGameHaveNotStartedOrFinished),
 		)
 	})
 
 	t.Run("SecondPlayerDeclaredAWinner", func(t *testing.T) {
-		ID := testdata.StringIdentifier("g777")
+		ID := mock.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate(),
 				event.GameCreated{GameID: ID.String()},
 				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player1@game.com", Move: int(game.Rock)}),
-			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Paper)}),
+			When(command.MakeMove{GameID: ID, PlayerEmail: "player2@game.com", Move: int(game.Paper)}),
 			Then(
 				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Paper)},
 				event.GameWon{GameID: ID.String(), Winner: "player2@game.com", Loser: "player1@game.com"},
@@ -127,12 +138,12 @@ func TestAggregateMakeMove(t *testing.T) {
 	})
 
 	t.Run("GameTied", func(t *testing.T) {
-		ID := testdata.StringIdentifier("g777")
+		ID := mock.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate(),
 				event.GameCreated{GameID: ID.String()},
 				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player1@game.com", Move: int(game.Scissors)}),
-			When(command.MakeMove{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Scissors)}),
+			When(command.MakeMove{GameID: ID, PlayerEmail: "player2@game.com", Move: int(game.Scissors)}),
 			Then(
 				event.MoveDecided{GameID: ID.String(), PlayerEmail: "player2@game.com", Move: int(game.Scissors)},
 				event.GameTied{GameID: ID.String()},
@@ -142,8 +153,7 @@ func TestAggregateMakeMove(t *testing.T) {
 }
 
 func createTestAggregate() *aggregate.Base {
-	ID := testdata.StringIdentifier("GameAgg")
-	gameAgg := game.NewAggregate(ID)
+	gameAgg := game.NewAggregate(ksuid.New())
 
 	return aggregate.NewBase(gameAgg, nil, nil)
 }
