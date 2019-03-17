@@ -43,7 +43,12 @@ func (d *Dispatcher) Handle(c domain.Command) ([]domain.DomainEvent, error) {
 		return nil, err
 	}
 
-	_, err = agg.Handle(c)
+	events, err := agg.Handle(c)
+	if err != nil {
+		return nil, err
+	}
+
+	err = d.eventStore.StoreEventsFor(agg.AggregateID(), len(loadedEvents), events)
 	if err != nil {
 		return nil, err
 	}

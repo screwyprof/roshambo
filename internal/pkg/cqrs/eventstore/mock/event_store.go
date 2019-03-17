@@ -7,8 +7,10 @@ import (
 )
 
 var (
-	// ) happens when event store can't load events.
+	// ErrEventStoreCannotLoadEvents happens when event store can't load events.
 	ErrEventStoreCannotLoadEvents = errors.New("cannot load events")
+	// ErrEventStoreCannotStoreEvents happens when event store can't store events.
+	ErrEventStoreCannotStoreEvents = errors.New("cannot store events")
 )
 
 // EventStoreMock mocks event store.
