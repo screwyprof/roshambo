@@ -1,6 +1,7 @@
 package dispatcher
 
 import (
+	"fmt"
 	"github.com/screwyprof/roshambo/pkg/domain"
 )
 
@@ -48,10 +49,12 @@ func (d *Dispatcher) Handle(c domain.Command) ([]domain.DomainEvent, error) {
 		return nil, err
 	}
 
+	fmt.Println(events, err)
+
 	err = d.eventStore.StoreEventsFor(agg.AggregateID(), len(loadedEvents), events)
 	if err != nil {
 		return nil, err
 	}
 
-	return nil, nil
+	return events, nil
 }

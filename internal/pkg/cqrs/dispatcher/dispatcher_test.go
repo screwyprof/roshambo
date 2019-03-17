@@ -58,7 +58,7 @@ func TestNewDispatcherHandle(t *testing.T) {
 		Test(t)(
 			Given(d),
 			When(testdata.MakeSomethingHappen{AggID: aggID}),
-			Then(),
+			Then(testdata.SomethingHappened{}),
 		)
 	})
 
@@ -123,6 +123,16 @@ func TestNewDispatcherHandle(t *testing.T) {
 			Given(d),
 			When(testdata.MakeSomethingHappen{AggID: aggID}),
 			ThenFailWith(esMock.ErrEventStoreCannotStoreEvents),
+		)
+	})
+
+	t.Run("ItReturnsEvents", func(t *testing.T) {
+		aggID := testdata.StringIdentifier("TestAgg")
+		d := createDispatcherWithStoreEventStore(aggID, nil, nil)
+		Test(t)(
+			Given(d),
+			When(testdata.MakeSomethingHappen{AggID: aggID}),
+			Then(testdata.SomethingHappened{}),
 		)
 	})
 }
