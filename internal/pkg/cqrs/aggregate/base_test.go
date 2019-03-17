@@ -6,8 +6,8 @@ import (
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
 
-	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata"
 	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata/fixture"
+	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
 
 	"github.com/screwyprof/roshambo/pkg/domain"
 )

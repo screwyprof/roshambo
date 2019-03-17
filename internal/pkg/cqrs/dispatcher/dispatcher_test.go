@@ -7,10 +7,9 @@ import (
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
-	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/dispatcher"
 	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/dispatcher/testdata/fixture"
-	esMock "github.com/screwyprof/roshambo/internal/pkg/cqrs/eventstore/mock"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
 
 	"github.com/screwyprof/roshambo/pkg/domain"
 )
@@ -40,10 +39,10 @@ func TestNewDispatcherHandle(t *testing.T) {
 		Test(t)(
 			Given(createDispatcher(
 				ID,
-				withEventStoreLoadErr(esMock.ErrEventStoreCannotLoadEvents),
+				withEventStoreLoadErr(mock.ErrEventStoreCannotLoadEvents),
 			)),
-			When(testdata.MakeSomethingHappen{AggID: ID}),
-			ThenFailWith(esMock.ErrEventStoreCannotLoadEvents),
+			When(mock.MakeSomethingHappen{AggID: ID}),
+			ThenFailWith(mock.ErrEventStoreCannotLoadEvents),
 		)
 	})
 
@@ -54,8 +53,8 @@ func TestNewDispatcherHandle(t *testing.T) {
 				ID,
 				withEmptyFactory(),
 			)),
-			When(testdata.MakeSomethingHappen{AggID: ID}),
-			ThenFailWith(testdata.ErrAggIsNotRegistered),
+			When(mock.MakeSomethingHappen{AggID: ID}),
+			ThenFailWith(mock.ErrAggIsNotRegistered),
 		)
 	})
 
@@ -64,11 +63,11 @@ func TestNewDispatcherHandle(t *testing.T) {
 		Test(t)(
 			Given(createDispatcher(
 				ID,
-				withLoadedEvents([]domain.DomainEvent{testdata.SomethingHappened{}}),
+				withLoadedEvents([]domain.DomainEvent{mock.SomethingHappened{}}),
 				withStaticEventApplier(),
 			)),
-			When(testdata.MakeSomethingHappen{AggID: ID}),
-			ThenFailWith(testdata.ErrOnSomethingHappenedApplierNotFound),
+			When(mock.MakeSomethingHappen{AggID: ID}),
+			ThenFailWith(mock.ErrOnSomethingHappenedApplierNotFound),
 		)
 	})
 
@@ -77,10 +76,10 @@ func TestNewDispatcherHandle(t *testing.T) {
 		Test(t)(
 			Given(createDispatcher(
 				ID,
-				withLoadedEvents([]domain.DomainEvent{testdata.SomethingHappened{}}),
+				withLoadedEvents([]domain.DomainEvent{mock.SomethingHappened{}}),
 			)),
-			When(testdata.MakeSomethingHappen{AggID: ID}),
-			ThenFailWith(testdata.ErrItCanHappenOnceOnly),
+			When(mock.MakeSomethingHappen{AggID: ID}),
+			ThenFailWith(mock.ErrItCanHappenOnceOnly),
 		)
 	})
 
@@ -89,10 +88,10 @@ func TestNewDispatcherHandle(t *testing.T) {
 		Test(t)(
 			Given(createDispatcher(
 				ID,
-				withEventStoreSaveErr(esMock.ErrEventStoreCannotStoreEvents),
+				withEventStoreSaveErr(mock.ErrEventStoreCannotStoreEvents),
 			)),
-			When(testdata.MakeSomethingHappen{AggID: ID}),
-			ThenFailWith(esMock.ErrEventStoreCannotStoreEvents),
+			When(mock.MakeSomethingHappen{AggID: ID}),
+			ThenFailWith(mock.ErrEventStoreCannotStoreEvents),
 		)
 	})
 
@@ -100,8 +99,8 @@ func TestNewDispatcherHandle(t *testing.T) {
 		ID := ksuid.New()
 		Test(t)(
 			Given(createDispatcher(ID)),
-			When(testdata.MakeSomethingHappen{AggID: ID}),
-			Then(testdata.SomethingHappened{}),
+			When(mock.MakeSomethingHappen{AggID: ID}),
+			Then(mock.SomethingHappened{}),
 		)
 	})
 }
@@ -164,7 +163,7 @@ func createDispatcher(ID domain.Identifier, opts ...option) *dispatcher.Dispatch
 		applier = aggregate.NewStaticEventApplier()
 	}
 
-	agg := aggregate.NewBase(testdata.NewTestAggregate(ID), nil, applier)
+	agg := aggregate.NewBase(mock.NewTestAggregate(ID), nil, applier)
 	aggFactory := createAggFactory(agg, config.emptyFactory)
 	eventStore := createEventStoreMock(config.loadedEvents, config.loadErr, config.storeErr)
 
@@ -183,8 +182,8 @@ func createAggFactory(agg *aggregate.Base, empty bool) *aggregate.Factory {
 	return f
 }
 
-func createEventStoreMock(want []domain.DomainEvent, loadErr error, storeErr error) *esMock.EventStoreMock {
-	eventStore := &esMock.EventStoreMock{
+func createEventStoreMock(want []domain.DomainEvent, loadErr error, storeErr error) *mock.EventStoreMock {
+	eventStore := &mock.EventStoreMock{
 		Loader: func(aggregateID domain.Identifier) ([]domain.DomainEvent, error) {
 			return want, loadErr
 		},

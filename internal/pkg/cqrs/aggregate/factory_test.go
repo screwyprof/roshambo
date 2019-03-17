@@ -5,7 +5,7 @@ import (
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
-	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
 
 	"github.com/screwyprof/roshambo/pkg/domain"
 )
@@ -24,17 +24,17 @@ func TestFactoryCreateAggregate(t *testing.T) {
 	t.Run("ItPanicsIfTheAggregateIsNotRegistered", func(t *testing.T) {
 		f := aggregate.NewFactory()
 
-		_, err := f.CreateAggregate("testdata.TestAggregate", testdata.StringIdentifier("TestAgg"))
+		_, err := f.CreateAggregate("mock.TestAggregate", mock.StringIdentifier("TestAgg"))
 
-		assert.Equals(t, testdata.ErrAggIsNotRegistered, err)
+		assert.Equals(t, mock.ErrAggIsNotRegistered, err)
 	})
 }
 
 func TestFactoryRegisterAggregate(t *testing.T) {
 	t.Run("ItRegistersAnAggregateFactory", func(t *testing.T) {
 		// arrange
-		ID := testdata.StringIdentifier("TestAgg")
-		expected := aggregate.NewBase(testdata.NewTestAggregate(ID), nil, nil)
+		ID := mock.StringIdentifier("TestAgg")
+		expected := aggregate.NewBase(mock.NewTestAggregate(ID), nil, nil)
 
 		f := aggregate.NewFactory()
 
@@ -42,7 +42,7 @@ func TestFactoryRegisterAggregate(t *testing.T) {
 		f.RegisterAggregate(func(ID domain.Identifier) domain.AdvancedAggregate {
 			return expected
 		})
-		newAgg, err := f.CreateAggregate("testdata.TestAggregate", ID)
+		newAgg, err := f.CreateAggregate("mock.TestAggregate", ID)
 
 		// assert
 		assert.Ok(t, err)

@@ -1,4 +1,4 @@
-package testdata
+package mock
 
 import (
 	"errors"
@@ -38,7 +38,7 @@ func (a *TestAggregate) AggregateID() domain.Identifier {
 
 // AggregateType implements domain.Aggregate interface.
 func (a *TestAggregate) AggregateType() string {
-	return "testdata.TestAggregate"
+	return "mock.TestAggregate"
 }
 
 func (a *TestAggregate) MakeSomethingHappen(c MakeSomethingHappen) ([]domain.DomainEvent, error) {

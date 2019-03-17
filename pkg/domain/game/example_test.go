@@ -4,14 +4,14 @@ import (
 	"fmt"
 
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
-	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
 
 	"github.com/screwyprof/roshambo/pkg/command"
 	"github.com/screwyprof/roshambo/pkg/domain"
 	"github.com/screwyprof/roshambo/pkg/domain/game"
 )
 
-func ExampleVictory() {
+func Example_Victory() {
 	suite := newExampleSuite("TheGame")
 	suite.run(func(ID domain.Identifier, agg domain.AdvancedAggregate, player1, player2 string) {
 		agg.Handle(command.CreateNewGame{GameID: ID})
@@ -25,7 +25,7 @@ func ExampleVictory() {
 	// event.GameWon{GameID:"TheGame", Winner:"jerry@game.net", Loser:"tom@game.net"}
 }
 
-func ExampleTie() {
+func Example_Tie() {
 	suite := newExampleSuite("TieGame")
 	suite.run(func(ID domain.Identifier, agg domain.AdvancedAggregate, player1, player2 string) {
 		agg.Handle(command.CreateNewGame{GameID: ID})
@@ -50,7 +50,7 @@ type exampleSuite struct {
 }
 
 func newExampleSuite(ID string) exampleSuite {
-	id := testdata.StringIdentifier(ID)
+	id := mock.StringIdentifier(ID)
 	return exampleSuite{
 		ID:      id,
 		game:    aggregate.NewBase(game.NewAggregate(id), nil, nil),

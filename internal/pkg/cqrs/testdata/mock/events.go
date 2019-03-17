@@ -1,4 +1,4 @@
-package testdata
+package mock
 
 type SomethingHappened struct{}
 func (c SomethingHappened) EventType() string {

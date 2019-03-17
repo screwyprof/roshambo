@@ -7,9 +7,8 @@ import (
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
-
-	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata"
 	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata/fixture"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
 
 	"github.com/screwyprof/roshambo/pkg/command"
 	"github.com/screwyprof/roshambo/pkg/domain"
@@ -31,7 +30,7 @@ func TestNewAggregate(t *testing.T) {
 
 func TestAggregateAggregateID(t *testing.T) {
 	t.Run("ItReturnsAggregateID", func(t *testing.T) {
-		ID := testdata.StringIdentifier("Game")
+		ID := mock.StringIdentifier("Game")
 		agg := game.NewAggregate(ID)
 
 		assert.Equals(t, ID, agg.AggregateID())
@@ -40,7 +39,7 @@ func TestAggregateAggregateID(t *testing.T) {
 
 func TestAggregateAggregateType(t *testing.T) {
 	t.Run("ItReturnsAggregateType", func(t *testing.T) {
-		ID := testdata.StringIdentifier("Game")
+		ID := mock.StringIdentifier("Game")
 		agg := game.NewAggregate(ID)
 
 		assert.Equals(t, "game.Aggregate", agg.AggregateType())
@@ -49,7 +48,7 @@ func TestAggregateAggregateType(t *testing.T) {
 
 func TestAggregate_CreateNewGame(t *testing.T) {
 	t.Run("ItCreatesNewGame", func(t *testing.T) {
-		ID := testdata.StringIdentifier("g777")
+		ID := mock.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate()),
 			When(command.CreateNewGame{GameID: ID}),
@@ -58,7 +57,7 @@ func TestAggregate_CreateNewGame(t *testing.T) {
 	})
 
 	t.Run("ItCannotStartANewGameIfItTheGameIsAlreadyStarted", func(t *testing.T) {
-		ID := testdata.StringIdentifier("g777")
+		ID := mock.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate(), event.GameCreated{GameID: ID.String()}),
 			When(command.CreateNewGame{GameID: ID}),
@@ -69,7 +68,7 @@ func TestAggregate_CreateNewGame(t *testing.T) {
 
 func TestAggregateMakeMove(t *testing.T) {
 	t.Run("APlayerCanMakeAMove", func(t *testing.T) {
-		ID := testdata.StringIdentifier("g777")
+		ID := mock.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate(), event.GameCreated{GameID: ID.String()}),
 			When(command.MakeMove{GameID: ID, PlayerEmail: "player@game.com", Move: int(game.Rock)}),
@@ -78,7 +77,7 @@ func TestAggregateMakeMove(t *testing.T) {
 	})
 
 	t.Run("ItFailsIfThePlayerIsTheSame", func(t *testing.T) {
-		ID := testdata.StringIdentifier("g777")
+		ID := mock.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate(),
 				event.GameCreated{GameID: ID.String()},
@@ -89,7 +88,7 @@ func TestAggregateMakeMove(t *testing.T) {
 	})
 
 	t.Run("ItFailsIfTheGameHaveNotStarted", func(t *testing.T) {
-		ID := testdata.StringIdentifier("g777")
+		ID := mock.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate()),
 			When(command.MakeMove{GameID: ID, PlayerEmail: "player@game.com", Move: int(game.Rock)}),
@@ -98,7 +97,7 @@ func TestAggregateMakeMove(t *testing.T) {
 	})
 
 	t.Run("FirstPlayerDeclaredAWinner", func(t *testing.T) {
-		ID := testdata.StringIdentifier("g777")
+		ID := mock.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate(),
 				event.GameCreated{GameID: ID.String()},
@@ -112,7 +111,7 @@ func TestAggregateMakeMove(t *testing.T) {
 	})
 
 	t.Run("ItFailsIfTheMoveIsMadeAfterTheGameIsFinished", func(t *testing.T) {
-		ID := testdata.StringIdentifier("g777")
+		ID := mock.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate(),
 				event.GameCreated{GameID: ID.String()},
@@ -125,7 +124,7 @@ func TestAggregateMakeMove(t *testing.T) {
 	})
 
 	t.Run("SecondPlayerDeclaredAWinner", func(t *testing.T) {
-		ID := testdata.StringIdentifier("g777")
+		ID := mock.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate(),
 				event.GameCreated{GameID: ID.String()},
@@ -139,7 +138,7 @@ func TestAggregateMakeMove(t *testing.T) {
 	})
 
 	t.Run("GameTied", func(t *testing.T) {
-		ID := testdata.StringIdentifier("g777")
+		ID := mock.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate(),
 				event.GameCreated{GameID: ID.String()},
