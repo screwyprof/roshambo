@@ -1,9 +1,6 @@
 package dispatcher
 
-import (
-	"fmt"
-	"github.com/screwyprof/roshambo/pkg/domain"
-)
+import "github.com/screwyprof/roshambo/pkg/domain"
 
 // Dispatcher is a basic message dispatcher.
 //
@@ -16,6 +13,7 @@ type Dispatcher struct {
 	aggregateFactory domain.AggregateFactory
 }
 
+// NewDispatcher creates a new instance of Dispatcher.
 func NewDispatcher(eventStore domain.EventStore, aggregateFactory domain.AggregateFactory) *Dispatcher {
 	if eventStore == nil {
 		panic("eventStore is required")
@@ -31,15 +29,9 @@ func NewDispatcher(eventStore domain.EventStore, aggregateFactory domain.Aggrega
 	}
 }
 
+// Handle implements domain.CommandHandler interface.
 func (d *Dispatcher) Handle(c domain.Command) ([]domain.DomainEvent, error) {
-	agg := d.aggregateFactory.CreateAggregate(c.AggregateType(), c.AggregateID())
-
-	loadedEvents, err := d.eventStore.LoadEventsFor(c.AggregateID())
-	if err != nil {
-		return nil, err
-	}
-
-	err = agg.Apply(loadedEvents...)
+	agg, err := d.loadAggregate(c)
 	if err != nil {
 		return nil, err
 	}
@@ -49,12 +41,25 @@ func (d *Dispatcher) Handle(c domain.Command) ([]domain.DomainEvent, error) {
 		return nil, err
 	}
 
-	fmt.Println(events, err)
-
-	err = d.eventStore.StoreEventsFor(agg.AggregateID(), len(loadedEvents), events)
+	err = d.eventStore.StoreEventsFor(agg.AggregateID(), agg.Version(), events)
 	if err != nil {
 		return nil, err
 	}
 
 	return events, nil
+}
+
+func (d *Dispatcher) loadAggregate(c domain.Command) (domain.AdvancedAggregate, error) {
+	loadedEvents, err := d.eventStore.LoadEventsFor(c.AggregateID())
+	if err != nil {
+		return nil, err
+	}
+
+	agg := d.aggregateFactory.CreateAggregate(c.AggregateType(), c.AggregateID())
+	err = agg.Apply(loadedEvents...)
+	if err != nil {
+		return nil, err
+	}
+
+	return agg, nil
 }
