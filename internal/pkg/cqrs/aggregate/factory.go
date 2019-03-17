@@ -4,7 +4,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/google/uuid"
+	"github.com/segmentio/ksuid"
 
 	"github.com/screwyprof/roshambo/pkg/domain"
 )
@@ -26,7 +26,7 @@ func (f *Factory) RegisterAggregate(factory domain.FactoryFn) {
 	f.factoriesMu.Lock()
 	defer f.factoriesMu.Unlock()
 
-	agg := factory(uuid.New())
+	agg := factory(ksuid.New())
 	f.factories[agg.AggregateType()] = factory
 }
 

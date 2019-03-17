@@ -3,7 +3,7 @@ package game_test
 import (
 	"testing"
 
-	"github.com/google/uuid"
+	"github.com/segmentio/ksuid"
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
@@ -154,7 +154,7 @@ func TestAggregateMakeMove(t *testing.T) {
 }
 
 func createTestAggregate() *aggregate.Base {
-	gameAgg := game.NewAggregate(uuid.New())
+	gameAgg := game.NewAggregate(ksuid.New())
 
 	return aggregate.NewBase(gameAgg, nil, nil)
 }

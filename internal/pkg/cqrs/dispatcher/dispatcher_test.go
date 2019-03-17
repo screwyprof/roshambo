@@ -3,7 +3,7 @@ package dispatcher_test
 import (
 	"testing"
 
-	"github.com/google/uuid"
+	"github.com/segmentio/ksuid"
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
@@ -36,7 +36,7 @@ func TestNewDispatcher(t *testing.T) {
 
 func TestNewDispatcherHandle(t *testing.T) {
 	t.Run("ItFailsIfItCannotLoadEventsForAggregate", func(t *testing.T) {
-		ID := uuid.New()
+		ID := ksuid.New()
 		Test(t)(
 			Given(createDispatcher(
 				ID,
@@ -48,7 +48,7 @@ func TestNewDispatcherHandle(t *testing.T) {
 	})
 
 	t.Run("ItCannotCreateAggregate", func(t *testing.T) {
-		ID := uuid.New()
+		ID := ksuid.New()
 		Test(t)(
 			Given(createDispatcher(
 				ID,
@@ -60,7 +60,7 @@ func TestNewDispatcherHandle(t *testing.T) {
 	})
 
 	t.Run("ItFailsIfItCannotApplyEvents", func(t *testing.T) {
-		ID := uuid.New()
+		ID := ksuid.New()
 		Test(t)(
 			Given(createDispatcher(
 				ID,
@@ -73,7 +73,7 @@ func TestNewDispatcherHandle(t *testing.T) {
 	})
 
 	t.Run("ItFailsIfAggregateCannotHandleTheGivenCommand", func(t *testing.T) {
-		ID := uuid.New()
+		ID := ksuid.New()
 		Test(t)(
 			Given(createDispatcher(
 				ID,
@@ -85,7 +85,7 @@ func TestNewDispatcherHandle(t *testing.T) {
 	})
 
 	t.Run("ItFailsIfItCannotStoreEvents", func(t *testing.T) {
-		ID := uuid.New()
+		ID := ksuid.New()
 		Test(t)(
 			Given(createDispatcher(
 				ID,
@@ -97,7 +97,7 @@ func TestNewDispatcherHandle(t *testing.T) {
 	})
 
 	t.Run("ItReturnsEvents", func(t *testing.T) {
-		ID := uuid.New()
+		ID := ksuid.New()
 		Test(t)(
 			Given(createDispatcher(ID)),
 			When(testdata.MakeSomethingHappen{AggID: ID}),

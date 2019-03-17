@@ -3,14 +3,14 @@ package command_test
 import (
 	"testing"
 
-	"github.com/google/uuid"
+	"github.com/segmentio/ksuid"
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
 	"github.com/screwyprof/roshambo/pkg/command"
 )
 
 func TestMakeMoveAggregateID(t *testing.T) {
-	ID := uuid.New()
+	ID := ksuid.New()
 	assert.Equals(t, ID, command.MakeMove{GameID: ID}.AggregateID())
 }
 
