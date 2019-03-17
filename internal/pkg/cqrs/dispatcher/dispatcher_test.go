@@ -3,13 +3,14 @@ package dispatcher_test
 import (
 	"testing"
 
+	"github.com/google/uuid"
+
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/dispatcher"
 	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/dispatcher/testdata/fixture"
 	esMock "github.com/screwyprof/roshambo/internal/pkg/cqrs/eventstore/mock"
-	"github.com/screwyprof/roshambo/internal/pkg/cqrs/identifier"
 
 	"github.com/screwyprof/roshambo/pkg/domain"
 )
@@ -35,7 +36,7 @@ func TestNewDispatcher(t *testing.T) {
 
 func TestNewDispatcherHandle(t *testing.T) {
 	t.Run("ItFailsIfItCannotLoadEventsForAggregate", func(t *testing.T) {
-		ID := identifier.NewUUID()
+		ID := uuid.New()
 		Test(t)(
 			Given(createDispatcher(
 				ID,
@@ -47,7 +48,7 @@ func TestNewDispatcherHandle(t *testing.T) {
 	})
 
 	t.Run("ItCannotCreateAggregate", func(t *testing.T) {
-		ID := identifier.NewUUID()
+		ID := uuid.New()
 		Test(t)(
 			Given(createDispatcher(
 				ID,
@@ -59,7 +60,7 @@ func TestNewDispatcherHandle(t *testing.T) {
 	})
 
 	t.Run("ItFailsIfItCannotApplyEvents", func(t *testing.T) {
-		ID := identifier.NewUUID()
+		ID := uuid.New()
 		Test(t)(
 			Given(createDispatcher(
 				ID,
@@ -72,7 +73,7 @@ func TestNewDispatcherHandle(t *testing.T) {
 	})
 
 	t.Run("ItFailsIfAggregateCannotHandleTheGivenCommand", func(t *testing.T) {
-		ID := identifier.NewUUID()
+		ID := uuid.New()
 		Test(t)(
 			Given(createDispatcher(
 				ID,
@@ -84,7 +85,7 @@ func TestNewDispatcherHandle(t *testing.T) {
 	})
 
 	t.Run("ItFailsIfItCannotStoreEvents", func(t *testing.T) {
-		ID := identifier.NewUUID()
+		ID := uuid.New()
 		Test(t)(
 			Given(createDispatcher(
 				ID,
@@ -96,7 +97,7 @@ func TestNewDispatcherHandle(t *testing.T) {
 	})
 
 	t.Run("ItReturnsEvents", func(t *testing.T) {
-		ID := identifier.NewUUID()
+		ID := uuid.New()
 		Test(t)(
 			Given(createDispatcher(ID)),
 			When(testdata.MakeSomethingHappen{AggID: ID}),
