@@ -46,9 +46,17 @@ func Given(dispatcher domain.CommandHandler) GivenFn {
 }
 
 // When prepares the command handler for the given command.
-func When(c domain.Command) WhenFn {
+func When(cmd ...domain.Command) WhenFn {
 	return func(dispatcher domain.CommandHandler) ([]domain.DomainEvent, error) {
-		return dispatcher.Handle(c)
+		var events []domain.DomainEvent
+		for _, c := range cmd {
+			e, err := dispatcher.Handle(c)
+			if err != nil {
+				return nil, err
+			}
+			events = append(events, e...)
+		}
+		return events, nil
 	}
 }
 
