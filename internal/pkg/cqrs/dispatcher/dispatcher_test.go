@@ -5,11 +5,11 @@ import (
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
-	fMock "github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/mock"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/dispatcher"
 	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/dispatcher/testdata/fixture"
 	esMock "github.com/screwyprof/roshambo/internal/pkg/cqrs/eventstore/mock"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs/identifier"
 
 	"github.com/screwyprof/roshambo/pkg/domain"
 )
@@ -35,93 +35,151 @@ func TestNewDispatcher(t *testing.T) {
 
 func TestNewDispatcherHandle(t *testing.T) {
 	t.Run("ItFailsIfItCannotLoadEventsForAggregate", func(t *testing.T) {
-		aggID := testdata.StringIdentifier("TestAgg")
-		d := createDispatcher(aggID, nil, esMock.ErrEventStoreCannotLoadEvents)
-
+		ID := identifier.NewUUID()
 		Test(t)(
-			Given(d),
-			When(testdata.MakeSomethingHappen{AggID: aggID}),
+			Given(createDispatcher(
+				ID,
+				withEventStoreLoadErr(esMock.ErrEventStoreCannotLoadEvents),
+			)),
+			When(testdata.MakeSomethingHappen{AggID: ID}),
 			ThenFailWith(esMock.ErrEventStoreCannotLoadEvents),
 		)
 	})
 
-	t.Run("ItFailsIfItCannotApplyEvents", func(t *testing.T) {
-		// arrange
-		aggID := testdata.StringIdentifier("TestAgg")
-		d := createDispatcherWithStaticEventApplier(aggID, []domain.DomainEvent{testdata.SomethingHappened{}}, nil)
-
+	t.Run("ItCannotCreateAggregate", func(t *testing.T) {
+		ID := identifier.NewUUID()
 		Test(t)(
-			Given(d),
-			When(testdata.MakeSomethingHappen{AggID: aggID}),
+			Given(createDispatcher(
+				ID,
+				withEmptyFactory(),
+			)),
+			When(testdata.MakeSomethingHappen{AggID: ID}),
+			ThenFailWith(testdata.ErrAggIsNotRegistered),
+		)
+	})
+
+	t.Run("ItFailsIfItCannotApplyEvents", func(t *testing.T) {
+		ID := identifier.NewUUID()
+		Test(t)(
+			Given(createDispatcher(
+				ID,
+				withLoadedEvents([]domain.DomainEvent{testdata.SomethingHappened{}}),
+				withStaticEventApplier(),
+			)),
+			When(testdata.MakeSomethingHappen{AggID: ID}),
 			ThenFailWith(testdata.ErrOnSomethingHappenedApplierNotFound),
 		)
 	})
 
 	t.Run("ItFailsIfAggregateCannotHandleTheGivenCommand", func(t *testing.T) {
-		// arrange
-		aggID := testdata.StringIdentifier("TestAgg")
-		d := createDispatcher(aggID, []domain.DomainEvent{testdata.SomethingHappened{}}, nil)
-
+		ID := identifier.NewUUID()
 		Test(t)(
-			Given(d),
-			When(testdata.MakeSomethingHappen{AggID: aggID}),
+			Given(createDispatcher(
+				ID,
+				withLoadedEvents([]domain.DomainEvent{testdata.SomethingHappened{}}),
+			)),
+			When(testdata.MakeSomethingHappen{AggID: ID}),
 			ThenFailWith(testdata.ErrItCanHappenOnceOnly),
 		)
 	})
 
 	t.Run("ItFailsIfItCannotStoreEvents", func(t *testing.T) {
-		aggID := testdata.StringIdentifier("TestAgg")
-		d := createDispatcherWithStoreEventStore(aggID, nil, esMock.ErrEventStoreCannotStoreEvents)
-
+		ID := identifier.NewUUID()
 		Test(t)(
-			Given(d),
-			When(testdata.MakeSomethingHappen{AggID: aggID}),
+			Given(createDispatcher(
+				ID,
+				withEventStoreSaveErr(esMock.ErrEventStoreCannotStoreEvents),
+			)),
+			When(testdata.MakeSomethingHappen{AggID: ID}),
 			ThenFailWith(esMock.ErrEventStoreCannotStoreEvents),
 		)
 	})
 
 	t.Run("ItReturnsEvents", func(t *testing.T) {
-		aggID := testdata.StringIdentifier("TestAgg")
-		d := createDispatcherWithStoreEventStore(aggID, nil, nil)
+		ID := identifier.NewUUID()
 		Test(t)(
-			Given(d),
-			When(testdata.MakeSomethingHappen{AggID: aggID}),
+			Given(createDispatcher(ID)),
+			When(testdata.MakeSomethingHappen{AggID: ID}),
 			Then(testdata.SomethingHappened{}),
 		)
 	})
 }
 
-func createDispatcher(
-	aggID testdata.StringIdentifier, loadedEvents []domain.DomainEvent, eventStoreErr error) *dispatcher.Dispatcher {
-	agg := aggregate.NewBase(testdata.NewTestAggregate(aggID), nil, nil)
-	eventStore := createEventStoreMock(loadedEvents, eventStoreErr, nil)
-	aggFactory := createAggFactoryMock(agg)
-	return dispatcher.NewDispatcher(eventStore, aggFactory)
+type dispatcherOptions struct {
+	emptyFactory       bool
+	staticEventApplier bool
+	loadedEvents       []domain.DomainEvent
+
+	loadErr  error
+	storeErr error
 }
 
-func createDispatcherWithStoreEventStore(
-	aggID testdata.StringIdentifier, loadedEvents []domain.DomainEvent, eventStoreErr error) *dispatcher.Dispatcher {
-	agg := aggregate.NewBase(testdata.NewTestAggregate(aggID), nil, nil)
-	eventStore := createEventStoreMock(loadedEvents, nil, eventStoreErr)
-	aggFactory := createAggFactoryMock(agg)
-	return dispatcher.NewDispatcher(eventStore, aggFactory)
-}
+type option func(*dispatcherOptions)
 
-func createDispatcherWithStaticEventApplier(
-	aggID testdata.StringIdentifier, loadedEvents []domain.DomainEvent, eventStoreErr error) *dispatcher.Dispatcher {
-	agg := aggregate.NewBase(testdata.NewTestAggregate(aggID), nil, aggregate.NewStaticEventApplier())
-	eventStore := createEventStoreMock(loadedEvents, eventStoreErr, nil)
-	aggFactory := createAggFactoryMock(agg)
-	return dispatcher.NewDispatcher(eventStore, aggFactory)
-}
-
-func createAggFactoryMock(agg *aggregate.Base) *fMock.AggregateFactoryMock {
-	aggFactory := &fMock.AggregateFactoryMock{
-		Creator: func(aggregateType string, ID domain.Identifier) domain.AdvancedAggregate {
-			return agg
-		},
+func withStaticEventApplier() option {
+	return func(o *dispatcherOptions) {
+		o.staticEventApplier = true
 	}
-	return aggFactory
+}
+
+func withEmptyFactory() option {
+	return func(o *dispatcherOptions) {
+		o.emptyFactory = true
+	}
+}
+
+func withLoadedEvents(loadedEvents []domain.DomainEvent) option {
+	return func(o *dispatcherOptions) {
+		o.loadedEvents = loadedEvents
+	}
+}
+
+func withEventStoreLoadErr(err error) option {
+	return func(o *dispatcherOptions) {
+		o.loadErr = err
+	}
+}
+
+func withEventStoreSaveErr(err error) option {
+	return func(o *dispatcherOptions) {
+		o.storeErr = err
+	}
+}
+
+type eventApplier interface {
+	domain.EventApplier
+	RegisterAppliers(aggregate domain.Aggregate)
+	RegisterApplier(method string, applierFunc domain.EventApplierFunc)
+}
+
+func createDispatcher(ID domain.Identifier, opts ...option) *dispatcher.Dispatcher {
+	config := &dispatcherOptions{}
+	for _, opt := range opts {
+		opt(config)
+	}
+
+	var applier eventApplier
+	if config.staticEventApplier {
+		applier = aggregate.NewStaticEventApplier()
+	}
+
+	agg := aggregate.NewBase(testdata.NewTestAggregate(ID), nil, applier)
+	aggFactory := createAggFactory(agg, config.emptyFactory)
+	eventStore := createEventStoreMock(config.loadedEvents, config.loadErr, config.storeErr)
+
+	return dispatcher.NewDispatcher(eventStore, aggFactory)
+}
+
+func createAggFactory(agg *aggregate.Base, empty bool) *aggregate.Factory {
+	f := aggregate.NewFactory()
+	if empty {
+		return f
+	}
+	f.RegisterAggregate(func(ID domain.Identifier) domain.AdvancedAggregate {
+		return agg
+	})
+
+	return f
 }
 
 func createEventStoreMock(want []domain.DomainEvent, loadErr error, storeErr error) *esMock.EventStoreMock {

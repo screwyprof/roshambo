@@ -1,11 +1,11 @@
 package aggregate_test
 
 import (
-	"github.com/screwyprof/roshambo/internal/pkg/assert"
-	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata"
 	"testing"
 
+	"github.com/screwyprof/roshambo/internal/pkg/assert"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata"
 
 	"github.com/screwyprof/roshambo/pkg/domain"
 )
@@ -24,26 +24,28 @@ func TestFactoryCreateAggregate(t *testing.T) {
 	t.Run("ItPanicsIfTheAggregateIsNotRegistered", func(t *testing.T) {
 		f := aggregate.NewFactory()
 
-		factory := func() {
-			f.CreateAggregate("testdata.TestAggregate", testdata.StringIdentifier("TestAgg"))
-		}
+		_, err := f.CreateAggregate("testdata.TestAggregate", testdata.StringIdentifier("TestAgg"))
 
-		assert.Panic(t, factory)
+		assert.Equals(t, testdata.ErrAggIsNotRegistered, err)
 	})
 }
 
 func TestFactoryRegisterAggregate(t *testing.T) {
-	t.Run("ItPanicsIfTheAggregateIsNotRegistered", func(t *testing.T) {
+	t.Run("ItRegistersAnAggregateFactory", func(t *testing.T) {
+		// arrange
 		ID := testdata.StringIdentifier("TestAgg")
 		expected := aggregate.NewBase(testdata.NewTestAggregate(ID), nil, nil)
 
 		f := aggregate.NewFactory()
+
+		// act
 		f.RegisterAggregate(func(ID domain.Identifier) domain.AdvancedAggregate {
 			return expected
 		})
+		newAgg, err := f.CreateAggregate("testdata.TestAggregate", ID)
 
-		newAgg := f.CreateAggregate("testdata.TestAggregate", ID)
-
+		// assert
+		assert.Ok(t, err)
 		assert.Equals(t, expected, newAgg)
 	})
 }

@@ -84,5 +84,5 @@ type FactoryFn func(Identifier) AdvancedAggregate
 // AggregateFactory creates aggregates.
 type AggregateFactory interface {
 	RegisterAggregate(factory FactoryFn)
-	CreateAggregate(aggregateType string, ID Identifier) AdvancedAggregate
+	CreateAggregate(aggregateType string, ID Identifier) (AdvancedAggregate, error)
 }

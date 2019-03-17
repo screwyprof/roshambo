@@ -1,6 +1,7 @@
 package aggregate
 
 import (
+	"errors"
 	"sync"
 
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/identifier"
@@ -30,13 +31,13 @@ func (f *Factory) RegisterAggregate(factory domain.FactoryFn) {
 }
 
 // CreateAggregate creates an aggregate of a given type.
-func (f *Factory) CreateAggregate(aggregateType string, ID domain.Identifier) domain.AdvancedAggregate {
+func (f *Factory) CreateAggregate(aggregateType string, ID domain.Identifier) (domain.AdvancedAggregate, error) {
 	f.factoriesMu.Lock()
 	defer f.factoriesMu.Unlock()
 
 	factory, ok := f.factories[aggregateType]
 	if !ok {
-		panic(aggregateType + " is not registered")
+		return nil, errors.New(aggregateType + " is not registered")
 	}
-	return factory(ID)
+	return factory(ID), nil
 }

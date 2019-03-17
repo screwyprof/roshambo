@@ -55,7 +55,11 @@ func (d *Dispatcher) loadAggregate(c domain.Command) (domain.AdvancedAggregate, 
 		return nil, err
 	}
 
-	agg := d.aggregateFactory.CreateAggregate(c.AggregateType(), c.AggregateID())
+	agg, err := d.aggregateFactory.CreateAggregate(c.AggregateType(), c.AggregateID())
+	if err != nil {
+		return nil, err
+	}
+
 	err = agg.Apply(loadedEvents...)
 	if err != nil {
 		return nil, err
