@@ -1,6 +1,7 @@
 package game
 
 import (
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs/eventbus"
 	"testing"
 
 	"github.com/segmentio/ksuid"
@@ -65,5 +66,5 @@ func createDispatcher() *dispatcher.Dispatcher {
 		return aggregate.NewBase(game.NewAggregate(ID), nil, nil)
 	})
 
-	return dispatcher.NewDispatcher(eventStore, f)
+	return dispatcher.NewDispatcher(eventStore, f, eventbus.NewInMemoryEventBus())
 }
