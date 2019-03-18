@@ -11,10 +11,14 @@ import "github.com/screwyprof/roshambo/pkg/domain"
 type Dispatcher struct {
 	eventStore       domain.EventStore
 	aggregateFactory domain.AggregateFactory
+	eventPublisher   domain.EventPublisher
 }
 
 // NewDispatcher creates a new instance of Dispatcher.
-func NewDispatcher(eventStore domain.EventStore, aggregateFactory domain.AggregateFactory) *Dispatcher {
+func NewDispatcher(
+	eventStore domain.EventStore,
+	aggregateFactory domain.AggregateFactory,
+	eventPublisher domain.EventPublisher) *Dispatcher {
 	if eventStore == nil {
 		panic("eventStore is required")
 	}
@@ -23,9 +27,14 @@ func NewDispatcher(eventStore domain.EventStore, aggregateFactory domain.Aggrega
 		panic("aggregateFactory is required")
 	}
 
+	if eventPublisher == nil {
+		panic("eventPublisher is required")
+	}
+
 	return &Dispatcher{
 		eventStore:       eventStore,
 		aggregateFactory: aggregateFactory,
+		eventPublisher:   eventPublisher,
 	}
 }
 
@@ -41,7 +50,7 @@ func (d *Dispatcher) Handle(c domain.Command) ([]domain.DomainEvent, error) {
 		return nil, err
 	}
 
-	err = d.eventStore.StoreEventsFor(agg.AggregateID(), agg.Version(), events)
+	err = d.storeAndPublishEvents(agg, events...)
 	if err != nil {
 		return nil, err
 	}
@@ -66,4 +75,18 @@ func (d *Dispatcher) loadAggregate(c domain.Command) (domain.AdvancedAggregate, 
 	}
 
 	return agg, nil
+}
+
+func (d *Dispatcher) storeAndPublishEvents(agg domain.AdvancedAggregate, events ...domain.DomainEvent) error {
+	err := d.eventStore.StoreEventsFor(agg.AggregateID(), agg.Version(), events)
+	if err != nil {
+		return err
+	}
+
+	err = d.eventPublisher.Publish(events...)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
