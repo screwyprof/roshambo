@@ -20,11 +20,15 @@ func MatchEvent(t string) EventMatcher {
 // MatchAnyEventOf matches if any of several matchers matches.
 func MatchAnyEventOf(types ...string) EventMatcher {
 	return func(e DomainEvent) bool {
-		for _, t := range types {
-			if MatchEvent(t)(e) {
-				return true
-			}
-		}
-		return false
+		return matchAnyEvent(e, types...)
 	}
+}
+
+func matchAnyEvent(e DomainEvent, types ...string) bool {
+	for _, t := range types {
+		if MatchEvent(t)(e) {
+			return true
+		}
+	}
+	return false
 }
