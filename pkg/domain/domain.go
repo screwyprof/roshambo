@@ -86,3 +86,14 @@ type AggregateFactory interface {
 	RegisterAggregate(factory FactoryFn)
 	CreateAggregate(aggregateType string, ID Identifier) (AdvancedAggregate, error)
 }
+
+// EventPublisher publishes events.
+type EventPublisher interface {
+	Publish(e ...DomainEvent) error
+}
+
+// EventHandler handles events that were published though EventPublisher.
+type EventHandler interface {
+	//HandlerType() string
+	Handle(...DomainEvent) error
+}
