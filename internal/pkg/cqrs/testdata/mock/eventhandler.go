@@ -8,7 +8,21 @@ import (
 
 var (
 	ErrCannotHandleEvent = errors.New("cannot handle event")
+	ErrEventHandlerNotFound = errors.New("event handler for OnSomethingElseHappened event is not found")
 )
+
+type TestEventHandler struct {
+	SomethingHappened string
+}
+
+func (h *TestEventHandler) OnSomethingHappened(e SomethingHappened) error {
+	h.SomethingHappened = "test"
+	return nil
+}
+
+func (h *TestEventHandler) OnSomethingElseHappened(e SomethingElseHappened) error {
+	return ErrCannotHandleEvent
+}
 
 type EventHandlerMock struct {
 	Err error
