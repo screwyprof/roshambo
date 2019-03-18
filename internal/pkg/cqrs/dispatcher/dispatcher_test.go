@@ -9,6 +9,7 @@ import (
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/dispatcher"
 	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/dispatcher/testdata/fixture"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs/eventbus"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
 
 	"github.com/screwyprof/roshambo/pkg/domain"
@@ -20,14 +21,29 @@ var _ domain.CommandHandler = (*dispatcher.Dispatcher)(nil)
 func TestNewDispatcher(t *testing.T) {
 	t.Run("ItPanicsIfEventStoreIsNotGiven", func(t *testing.T) {
 		factory := func() {
-			dispatcher.NewDispatcher(nil, nil)
+			dispatcher.NewDispatcher(nil, nil, nil)
 		}
 		assert.Panic(t, factory)
 	})
 
 	t.Run("ItPanicsIfAggregateFactoryIsNotGiven", func(t *testing.T) {
 		factory := func() {
-			dispatcher.NewDispatcher(createEventStoreMock(nil, nil, nil), nil)
+			dispatcher.NewDispatcher(
+				createEventStoreMock(nil, nil, nil),
+				nil,
+				createEventPublisherMock(nil))
+		}
+		assert.Panic(t, factory)
+	})
+
+	t.Run("ItPanicsIfEventPublisherIsNotGiven", func(t *testing.T) {
+		factory := func() {
+			agg := aggregate.NewBase(mock.NewTestAggregate(ksuid.New()), nil, nil)
+			dispatcher.NewDispatcher(
+				createEventStoreMock(nil, nil, nil),
+				createAggFactory(agg, true),
+				nil,
+			)
 		}
 		assert.Panic(t, factory)
 	})
@@ -95,6 +111,24 @@ func TestNewDispatcherHandle(t *testing.T) {
 		)
 	})
 
+	t.Run("ItPublishesEvents", func(t *testing.T) {
+		ID := ksuid.New()
+		Test(t)(
+			Given(createDispatcher(ID)),
+			When(mock.MakeSomethingHappen{AggID: ID}),
+			Then(mock.SomethingHappened{}),
+		)
+	})
+
+	t.Run("ItFailsIfItCannotPublishEvents", func(t *testing.T) {
+		ID := ksuid.New()
+		Test(t)(
+			Given(createDispatcher(ID, withPublisherErr(mock.ErrCannotHandleEvent))),
+			When(mock.MakeSomethingHappen{AggID: ID}),
+			ThenFailWith(mock.ErrCannotHandleEvent),
+		)
+	})
+
 	t.Run("ItReturnsEvents", func(t *testing.T) {
 		ID := ksuid.New()
 		Test(t)(
@@ -110,8 +144,9 @@ type dispatcherOptions struct {
 	staticEventApplier bool
 	loadedEvents       []domain.DomainEvent
 
-	loadErr  error
-	storeErr error
+	loadErr      error
+	storeErr     error
+	publisherErr error
 }
 
 type option func(*dispatcherOptions)
@@ -146,6 +181,12 @@ func withEventStoreSaveErr(err error) option {
 	}
 }
 
+func withPublisherErr(err error) option {
+	return func(o *dispatcherOptions) {
+		o.publisherErr = err
+	}
+}
+
 type eventApplier interface {
 	domain.EventApplier
 	RegisterAppliers(aggregate domain.Aggregate)
@@ -167,7 +208,7 @@ func createDispatcher(ID domain.Identifier, opts ...option) *dispatcher.Dispatch
 	aggFactory := createAggFactory(agg, config.emptyFactory)
 	eventStore := createEventStoreMock(config.loadedEvents, config.loadErr, config.storeErr)
 
-	return dispatcher.NewDispatcher(eventStore, aggFactory)
+	return dispatcher.NewDispatcher(eventStore, aggFactory, createEventPublisherMock(config.publisherErr))
 }
 
 func createAggFactory(agg *aggregate.Base, empty bool) *aggregate.Factory {
@@ -192,4 +233,11 @@ func createEventStoreMock(want []domain.DomainEvent, loadErr error, storeErr err
 		},
 	}
 	return eventStore
+}
+
+func createEventPublisherMock(err error) *eventbus.InMemoryEventBus {
+	eventHandler := &mock.EventHandlerMock{Err: err}
+	b := eventbus.NewInMemoryEventBus()
+	b.Register(eventHandler)
+	return b
 }
