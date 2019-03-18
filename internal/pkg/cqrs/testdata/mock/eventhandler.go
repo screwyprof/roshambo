@@ -23,25 +23,18 @@ func (h *EventHandlerMock) SubscribedTo() domain.EventMatcher {
 	return domain.MatchAnyEventOf("SomethingHappened", "SomethingElseHappened")
 }
 
-func (h *EventHandlerMock) Handle(events ...domain.DomainEvent) error {
+func (h *EventHandlerMock) Handle(event domain.DomainEvent) error {
 	if h.Err != nil {
 		return h.Err
 	}
-
-	for _, e := range events {
-		h.handle(e)
-	}
-
-	return nil
-}
-
-func (h *EventHandlerMock) handle(event domain.DomainEvent) {
 	switch e := event.(type) {
 	case SomethingHappened:
 		h.OnSomethingHappened(e)
 	case SomethingElseHappened:
 		h.OnSomethingElseHappened(e)
 	}
+
+	return nil
 }
 
 func (h *EventHandlerMock) OnSomethingHappened(e SomethingHappened) {

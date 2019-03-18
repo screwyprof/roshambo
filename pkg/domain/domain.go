@@ -95,5 +95,5 @@ type EventPublisher interface {
 // EventHandler handles events that were published though EventPublisher.
 type EventHandler interface {
 	SubscribedTo() EventMatcher
-	Handle(...DomainEvent) error
+	Handle(DomainEvent) error
 }
