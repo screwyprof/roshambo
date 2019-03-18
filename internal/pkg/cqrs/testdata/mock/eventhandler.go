@@ -1,6 +1,13 @@
 package mock
 
-import "github.com/screwyprof/roshambo/pkg/domain"
+import (
+	"errors"
+	"github.com/screwyprof/roshambo/pkg/domain"
+)
+
+var (
+	ErrCannotHandleEvent = errors.New("cannot handle event")
+)
 
 type EventHandlerMock struct {
 	Err error

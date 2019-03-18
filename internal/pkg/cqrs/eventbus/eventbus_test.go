@@ -22,12 +22,27 @@ func TestNewInMemoryEventBus(t *testing.T) {
 func TestInMemoryEventBus_Publish(t *testing.T) {
 	t.Run("ItPublishesEvent", func(t *testing.T) {
 		// arrange
-		eventHandler := &mock.EventHandlerMock{}
+		eventHandler := &mock.EventHandlerMock{
+			Err: mock.ErrCannotHandleEvent,
+		}
 
 		b := eventbus.NewInMemoryEventBus()
 		b.Register(eventHandler)
 
+		// act
+		err := b.Publish(mock.SomethingHappened{}, mock.SomethingElseHappened{})
+
+		// assert
+		assert.Equals(t, mock.ErrCannotHandleEvent, err)
+	})
+
+	t.Run("ItFailsIfItCannotHandleAnEvent", func(t *testing.T) {
+		// arrange
 		want := []domain.DomainEvent{mock.SomethingHappened{}, mock.SomethingElseHappened{}}
+		eventHandler := &mock.EventHandlerMock{}
+
+		b := eventbus.NewInMemoryEventBus()
+		b.Register(eventHandler)
 
 		// act
 		err := b.Publish(mock.SomethingHappened{}, mock.SomethingElseHappened{})
