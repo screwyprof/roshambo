@@ -20,7 +20,7 @@ func TestNewInMemoryEventBus(t *testing.T) {
 }
 
 func TestInMemoryEventBus_Publish(t *testing.T) {
-	t.Run("ItPublishesEvent", func(t *testing.T) {
+	t.Run("ItFailsIfItCannotHandleAnEvent", func(t *testing.T) {
 		// arrange
 		eventHandler := &mock.EventHandlerMock{
 			Err: mock.ErrCannotHandleEvent,
@@ -36,7 +36,7 @@ func TestInMemoryEventBus_Publish(t *testing.T) {
 		assert.Equals(t, mock.ErrCannotHandleEvent, err)
 	})
 
-	t.Run("ItFailsIfItCannotHandleAnEvent", func(t *testing.T) {
+	t.Run("ItPublishesEvents", func(t *testing.T) {
 		// arrange
 		want := []domain.DomainEvent{mock.SomethingHappened{}, mock.SomethingElseHappened{}}
 		eventHandler := &mock.EventHandlerMock{}
@@ -46,6 +46,27 @@ func TestInMemoryEventBus_Publish(t *testing.T) {
 
 		// act
 		err := b.Publish(mock.SomethingHappened{}, mock.SomethingElseHappened{})
+
+		// assert
+		assert.Ok(t, err)
+		assert.Equals(t, want, eventHandler.Happened)
+	})
+
+	t.Run("ItHandlesOnlyMatchedEvents", func(t *testing.T) {
+		// arrange
+		want := []domain.DomainEvent{mock.SomethingHappened{}}
+		eventHandler := &mock.EventHandlerMock{
+			Matcher: domain.MatchEvent("SomethingHappened"),
+		}
+
+		b := eventbus.NewInMemoryEventBus()
+		b.Register(eventHandler)
+
+		// act
+		err := b.Publish([]domain.DomainEvent{
+			mock.SomethingHappened{},
+			mock.SomethingElseHappened{},
+		}...)
 
 		// assert
 		assert.Ok(t, err)
