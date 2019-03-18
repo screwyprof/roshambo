@@ -26,17 +26,25 @@ func (h *Dynamic) RegisterHandlers(entity interface{}) {
 	entityType := reflect.TypeOf(entity)
 	for i := 0; i < entityType.NumMethod(); i++ {
 		method := entityType.Method(i)
-		if !strings.HasPrefix(method.Name, "On") {
-			continue
-		}
-
-		h.Static.RegisterHandler(method.Name, func(e domain.DomainEvent) error {
-			result := method.Func.Call([]reflect.Value{reflect.ValueOf(entity), reflect.ValueOf(e)})
-			resErr := result[0].Interface()
-			if resErr != nil {
-				return resErr.(error)
-			}
-			return nil
-		})
+		h.registerHandlerDynamically(method, entity)
 	}
+}
+
+func (h *Dynamic) registerHandlerDynamically(method reflect.Method, entity interface{}) {
+	if !strings.HasPrefix(method.Name, "On") {
+		return
+	}
+
+	h.Static.RegisterHandler(method.Name, func(e domain.DomainEvent) error {
+		return h.invokeEventHandler(method, entity, e)
+	})
+}
+
+func (h *Dynamic) invokeEventHandler(method reflect.Method, entity interface{}, e domain.DomainEvent) error {
+	result := method.Func.Call([]reflect.Value{reflect.ValueOf(entity), reflect.ValueOf(e)})
+	resErr := result[0].Interface()
+	if resErr != nil {
+		return resErr.(error)
+	}
+	return nil
 }
