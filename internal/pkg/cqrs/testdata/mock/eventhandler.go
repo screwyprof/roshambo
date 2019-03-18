@@ -24,6 +24,10 @@ func (h *TestEventHandler) OnSomethingElseHappened(e SomethingElseHappened) erro
 	return ErrCannotHandleEvent
 }
 
+func (h *TestEventHandler) SomeInvalidMethod() {
+
+}
+
 type EventHandlerMock struct {
 	Err error
 	Matcher domain.EventMatcher
