@@ -51,8 +51,8 @@ func TestAggregate_CreateNewGame(t *testing.T) {
 		ID := mock.StringIdentifier("g777")
 		Test(t)(
 			Given(createTestAggregate()),
-			When(command.CreateNewGame{GameID: ID}),
-			Then(event.GameCreated{GameID: ID.String()}),
+			When(command.CreateNewGame{GameID: ID, Creator: "tiger@happy.com"}),
+			Then(event.GameCreated{GameID: ID.String(), Creator: "tiger@happy.com"}),
 		)
 	})
 

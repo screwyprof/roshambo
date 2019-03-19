@@ -24,7 +24,7 @@ func Example() {
 	gameInfo := report.GameShortInfo{}
 	d := createDispatcher(&gameInfo)
 
-	failOnError(d.Handle(command.CreateNewGame{GameID: ID}))
+	failOnError(d.Handle(command.CreateNewGame{GameID: ID, Creator: "tiger@happy"}))
 	failOnError(d.Handle(command.MakeMove{GameID: ID, PlayerEmail: "gopher@happy", Move: int(game.Rock)}))
 	failOnError(d.Handle(command.MakeMove{GameID: ID, PlayerEmail: "tiger@happy", Move: int(game.Scissors)}))
 

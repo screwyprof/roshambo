@@ -3,7 +3,8 @@ package command
 import "github.com/screwyprof/roshambo/pkg/domain"
 
 type CreateNewGame struct {
-	GameID domain.Identifier
+	GameID  domain.Identifier
+	Creator string
 }
 
 func (c CreateNewGame) AggregateID() domain.Identifier {

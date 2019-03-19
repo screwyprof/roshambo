@@ -56,7 +56,7 @@ func (a *Aggregate) CreateNewGame(c command.CreateNewGame) ([]domain.DomainEvent
 	if a.state != notCreated {
 		return nil, ErrGameIsAlreadyStarted
 	}
-	return []domain.DomainEvent{event.GameCreated{GameID: c.GameID.String()}}, nil
+	return []domain.DomainEvent{event.GameCreated{GameID: c.GameID.String(), Creator: c.Creator}}, nil
 }
 
 // MakeMove makes a move.
