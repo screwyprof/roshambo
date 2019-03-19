@@ -95,5 +95,8 @@ type EventPublisher interface {
 // EventHandler handles events that were published though EventPublisher.
 type EventHandler interface {
 	SubscribedTo() EventMatcher
-	Handle(...DomainEvent) error
+	Handle(DomainEvent) error
 }
+
+// EventHandlerFunc is a function that can be used as an event handler.
+type EventHandlerFunc func(DomainEvent) error

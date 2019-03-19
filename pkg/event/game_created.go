@@ -1,7 +1,8 @@
 package event
 
 type GameCreated struct {
-	GameID string
+	GameID  string
+	Creator string
 }
 
 func (c GameCreated) EventType() string {
