@@ -1,0 +1,8 @@
+component_depth: 1
+languages:
+  - go
+exclude:
+  - /internal/pkg/assert/*
+  - /internal/pkg/cqrs/testdata/mock/*
+  - /internal/pkg/cqrs/aggregate/testdata/fixture/*
+  - /internal/pkg/cqrs/dispatcher/testdata/fixture/*
