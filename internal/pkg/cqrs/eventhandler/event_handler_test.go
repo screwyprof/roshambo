@@ -25,9 +25,7 @@ func TestEventHandlerHandle(t *testing.T) {
 		eh := &mock.TestEventHandler{}
 
 		s := eventhandler.New()
-		s.RegisterHandler("OnSomethingHappened", func(e domain.DomainEvent) error {
-			return eh.OnSomethingHappened(e.(mock.SomethingHappened))
-		})
+		s.RegisterHandlers(eh)
 
 		// act
 		err := s.Handle(mock.SomethingHappened{})
@@ -53,10 +51,7 @@ func TestEventHandlerHandle(t *testing.T) {
 		eh := &mock.TestEventHandler{}
 
 		s := eventhandler.New()
-		s.RegisterHandler("OnSomethingElseHappened", func(e domain.DomainEvent) error {
-			return eh.OnSomethingElseHappened(e.(mock.SomethingElseHappened))
-		})
-
+		s.RegisterHandlers(eh)
 		// act
 		err := s.Handle(mock.SomethingElseHappened{})
 
