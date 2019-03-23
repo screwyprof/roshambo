@@ -73,12 +73,13 @@ func TestEventHandlerSubscribedTo(t *testing.T) {
 			return eh.OnSomethingElseHappened(e.(mock.SomethingElseHappened))
 		})
 
-		want := domain.MatchAnyEventOf("SomethingHappened", "SomethingElseHappened")
+		///want := []string{"SomethingHappened", "SomethingElseHappened"}
 
 		// act
-		got := s.SubscribedTo()
+		matcher := s.SubscribedTo()
 
 		// assert
-		assert.Equals(t, want, got)
+		assert.True(t, matcher(mock.SomethingHappened{}))
+		assert.True(t, matcher(mock.SomethingElseHappened{}))
 	})
 }

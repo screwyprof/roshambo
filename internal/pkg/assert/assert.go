@@ -17,7 +17,7 @@ func True(tb testing.TB, condition bool) {
 func Ok(tb testing.TB, err error) {
 	tb.Helper()
 	if err != nil {
-		tb.Errorf("\033[31munexpected error: %v\033[39m\n\n", err)
+		tb.Fatalf("\033[31munexpected error: %v\033[39m\n\n", err)
 	}
 }
 
@@ -25,7 +25,7 @@ func Ok(tb testing.TB, err error) {
 func Equals(tb testing.TB, exp, act interface{}) {
 	tb.Helper()
 	if !reflect.DeepEqual(exp, act) {
-		tb.Errorf("\033[31m\n\n\texp:\n\t%#+v\n\tgot:\n\t%#+vv\033[39m", exp, act)
+		tb.Errorf("\033[31m\n\n\texp:\n\t%#+v\n\n\tgot:\n\t%#+v\033[39m", exp, act)
 	}
 }
 
