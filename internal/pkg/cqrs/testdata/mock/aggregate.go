@@ -10,6 +10,8 @@ var (
 	ErrItCanHappenOnceOnly  = errors.New("some business rule error occurred")
 	ErrMakeSomethingHandlerNotFound  = errors.New("handler for MakeSomethingHappen command is not found")
 	ErrOnSomethingHappenedApplierNotFound  = errors.New("event applier for OnSomethingHappened event is not found")
+
+	TestAggregateType = "mock.TestAggregate"
 )
 
 type StringIdentifier string

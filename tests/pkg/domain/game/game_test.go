@@ -12,6 +12,7 @@ import (
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/eventbus"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/eventhandler"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/eventstore"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs/store"
 
 	"github.com/screwyprof/roshambo/pkg/command"
 	"github.com/screwyprof/roshambo/pkg/domain"
@@ -84,16 +85,17 @@ func TestTie(t *testing.T) {
 }
 
 func createDispatcher(gameInfo *report.GameShortInfo) *dispatcher.Dispatcher {
+	gameInfoProjector := eventhandler.NewDynamic()
+	gameInfoProjector.RegisterHandlers(&gameEventHandler.GameShortInfoProjector{Projection: gameInfo})
+
 	f := aggregate.NewFactory()
 	f.RegisterAggregate(func(ID domain.Identifier) domain.AdvancedAggregate {
 		return aggregate.NewBase(game.NewAggregate(ID), nil, nil)
 	})
 
-	gameInfoProjector := eventhandler.NewDynamic()
-	gameInfoProjector.RegisterHandlers(&gameEventHandler.GameShortInfoProjector{Projection: gameInfo})
-
+	aggregateStore := store.NewStore(eventstore.NewInInMemoryEventStore(), f)
 	eventBus := eventbus.NewInMemoryEventBus()
 	eventBus.Register(gameInfoProjector)
 
-	return dispatcher.NewDispatcher(eventstore.NewInInMemoryEventStore(), f, eventBus)
+	return dispatcher.NewDispatcher(aggregateStore, eventBus)
 }

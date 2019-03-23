@@ -100,3 +100,9 @@ type EventHandler interface {
 
 // EventHandlerFunc is a function that can be used as an event handler.
 type EventHandlerFunc func(DomainEvent) error
+
+// AggregateStore loads and stores the aggregate.
+type AggregateStore interface {
+	Load(aggregateID Identifier, aggregateType string) (AdvancedAggregate, error)
+	Store(aggregate AdvancedAggregate, events ...DomainEvent) error
+}

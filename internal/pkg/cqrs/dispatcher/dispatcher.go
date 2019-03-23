@@ -9,22 +9,14 @@ import "github.com/screwyprof/roshambo/pkg/domain"
 // at startup and keep it in memory.
 // Depends on some kind of event storage mechanism.
 type Dispatcher struct {
-	eventStore       domain.EventStore
-	aggregateFactory domain.AggregateFactory
-	eventPublisher   domain.EventPublisher
+	store          domain.AggregateStore
+	eventPublisher domain.EventPublisher
 }
 
 // NewDispatcher creates a new instance of Dispatcher.
-func NewDispatcher(
-	eventStore domain.EventStore,
-	aggregateFactory domain.AggregateFactory,
-	eventPublisher domain.EventPublisher) *Dispatcher {
-	if eventStore == nil {
-		panic("eventStore is required")
-	}
-
-	if aggregateFactory == nil {
-		panic("aggregateFactory is required")
+func NewDispatcher(aggregateStore domain.AggregateStore, eventPublisher domain.EventPublisher) *Dispatcher {
+	if aggregateStore == nil {
+		panic("aggregateStore is required")
 	}
 
 	if eventPublisher == nil {
@@ -32,15 +24,14 @@ func NewDispatcher(
 	}
 
 	return &Dispatcher{
-		eventStore:       eventStore,
-		aggregateFactory: aggregateFactory,
-		eventPublisher:   eventPublisher,
+		store:          aggregateStore,
+		eventPublisher: eventPublisher,
 	}
 }
 
 // Handle implements domain.CommandHandler interface.
 func (d *Dispatcher) Handle(c domain.Command) ([]domain.DomainEvent, error) {
-	agg, err := d.loadAggregate(c)
+	agg, err := d.store.Load(c.AggregateID(), c.AggregateType())
 	if err != nil {
 		return nil, err
 	}
@@ -58,27 +49,8 @@ func (d *Dispatcher) Handle(c domain.Command) ([]domain.DomainEvent, error) {
 	return events, nil
 }
 
-func (d *Dispatcher) loadAggregate(c domain.Command) (domain.AdvancedAggregate, error) {
-	loadedEvents, err := d.eventStore.LoadEventsFor(c.AggregateID())
-	if err != nil {
-		return nil, err
-	}
-
-	agg, err := d.aggregateFactory.CreateAggregate(c.AggregateType(), c.AggregateID())
-	if err != nil {
-		return nil, err
-	}
-
-	err = agg.Apply(loadedEvents...)
-	if err != nil {
-		return nil, err
-	}
-
-	return agg, nil
-}
-
-func (d *Dispatcher) storeAndPublishEvents(agg domain.AdvancedAggregate, events ...domain.DomainEvent) error {
-	err := d.eventStore.StoreEventsFor(agg.AggregateID(), agg.Version(), events)
+func (d *Dispatcher) storeAndPublishEvents(aggregate domain.AdvancedAggregate, events ...domain.DomainEvent) error {
+	err := d.store.Store(aggregate, events...)
 	if err != nil {
 		return err
 	}
