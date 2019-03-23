@@ -22,6 +22,24 @@ func TestNewBase(t *testing.T) {
 		}
 		assert.Panic(t, factory)
 	})
+
+	t.Run("ItPanicsIfCommandHandlerIsNotGiven", func(t *testing.T) {
+		factory := func() {
+			aggregate.NewBase(NewTestAggregate(StringIdentifier("Test")), nil, nil)
+		}
+		assert.Panic(t, factory)
+	})
+
+	t.Run("ItPanicsIfEventApplierIsNotGiven", func(t *testing.T) {
+		factory := func() {
+			aggregate.NewBase(
+				NewTestAggregate(StringIdentifier("Test")),
+				aggregate.NewDynamicCommandHandler(),
+				nil,
+			)
+		}
+		assert.Panic(t, factory)
+	})
 }
 
 func TestBaseHandle(t *testing.T) {
@@ -89,7 +107,13 @@ func createTestAggWithDefaultCommandHandlerAndEventApplier() *aggregate.Base {
 	ID := StringIdentifier("TestAgg1")
 	pureAgg := NewTestAggregate(ID)
 
-	return aggregate.NewBase(pureAgg, nil, nil)
+	handler := aggregate.NewDynamicCommandHandler()
+	handler.RegisterHandlers(pureAgg)
+
+	applier := aggregate.NewDynamicEventApplier()
+	applier.RegisterAppliers(pureAgg)
+
+	return aggregate.NewBase(pureAgg, handler, applier)
 }
 
 func createTestAggregateWithCustomCommandHandlerAndEventApplier() *aggregate.Base {
@@ -103,14 +127,20 @@ func createTestAggWithEmptyCommandHandler() *aggregate.Base {
 	ID := StringIdentifier("TestAgg1")
 	pureAgg := NewTestAggregate(ID)
 
-	return aggregate.NewBase(pureAgg, aggregate.NewStaticCommandHandler(), nil)
+	applier := aggregate.NewDynamicEventApplier()
+	applier.RegisterAppliers(pureAgg)
+
+	return aggregate.NewBase(pureAgg, aggregate.NewStaticCommandHandler(), applier)
 }
 
 func createTestAggWithEmptyEventApplier() *aggregate.Base {
 	ID := StringIdentifier("TestAgg1")
 	pureAgg := NewTestAggregate(ID)
 
-	return aggregate.NewBase(pureAgg, nil, aggregate.NewStaticEventApplier())
+	handler := aggregate.NewDynamicCommandHandler()
+	handler.RegisterHandlers(pureAgg)
+
+	return aggregate.NewBase(pureAgg, handler, aggregate.NewStaticEventApplier())
 }
 
 func createEventApplier(pureAgg *TestAggregate) *aggregate.StaticEventApplier {

@@ -7,18 +7,18 @@ import (
 	"github.com/screwyprof/roshambo/pkg/domain"
 )
 
-type dynamicEventApplier struct {
+type DynamicEventApplier struct {
 	*StaticEventApplier
 }
 
-func newDynamicEventApplier() *dynamicEventApplier {
-	return &dynamicEventApplier{
+func NewDynamicEventApplier() *DynamicEventApplier {
+	return &DynamicEventApplier{
 		StaticEventApplier: NewStaticEventApplier(),
 	}
 }
 
 // RegisterAppliers registers all the event appliers found in the aggregate.
-func (a *dynamicEventApplier) RegisterAppliers(aggregate domain.Aggregate) {
+func (a *DynamicEventApplier) RegisterAppliers(aggregate domain.Aggregate) {
 	aggregateType := reflect.TypeOf(aggregate)
 	for i := 0; i < aggregateType.NumMethod(); i++ {
 		method := aggregateType.Method(i)

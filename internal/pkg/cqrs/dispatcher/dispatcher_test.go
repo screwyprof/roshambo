@@ -134,7 +134,15 @@ func createDispatcher(ID domain.Identifier, opts ...option) *dispatcher.Dispatch
 		opt(config)
 	}
 
-	agg := aggregate.NewBase(mock.NewTestAggregate(ID), nil, nil)
+	pureAgg := mock.NewTestAggregate(ID)
+
+	commandHandler := aggregate.NewDynamicCommandHandler()
+	commandHandler.RegisterHandlers(pureAgg)
+
+	eventApplier := aggregate.NewDynamicEventApplier()
+	eventApplier.RegisterAppliers(pureAgg)
+
+	agg := aggregate.NewBase(pureAgg, commandHandler, eventApplier)
 	if config.loadedEvents != nil {
 		_ = agg.Apply(config.loadedEvents...)
 	}

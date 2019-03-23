@@ -90,7 +90,15 @@ func createDispatcher(gameInfo *report.GameShortInfo) *dispatcher.Dispatcher {
 
 	f := aggregate.NewFactory()
 	f.RegisterAggregate(func(ID domain.Identifier) domain.AdvancedAggregate {
-		return aggregate.NewBase(game.NewAggregate(ID), nil, nil)
+		gameAgg := game.NewAggregate(ID)
+
+		commandHandler := aggregate.NewDynamicCommandHandler()
+		commandHandler.RegisterHandlers(gameAgg)
+
+		eventApplier := aggregate.NewDynamicEventApplier()
+		eventApplier.RegisterAppliers(gameAgg)
+
+		return aggregate.NewBase(gameAgg, commandHandler, eventApplier)
 	})
 
 	aggregateStore := store.NewStore(eventstore.NewInInMemoryEventStore(), f)

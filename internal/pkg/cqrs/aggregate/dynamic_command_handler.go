@@ -6,18 +6,18 @@ import (
 	"github.com/screwyprof/roshambo/pkg/domain"
 )
 
-type dynamicCommandHandler struct {
+type DynamicCommandHandler struct {
 	*StaticCommandHandler
 }
 
-func newDynamicCommandHandler() *dynamicCommandHandler {
-	return &dynamicCommandHandler{
+func NewDynamicCommandHandler() *DynamicCommandHandler {
+	return &DynamicCommandHandler{
 		StaticCommandHandler: NewStaticCommandHandler(),
 	}
 }
 
 // RegisterHandlers registers all the command handlers found in the aggregate.
-func (h *dynamicCommandHandler) RegisterHandlers(aggregate domain.Aggregate) {
+func (h *DynamicCommandHandler) RegisterHandlers(aggregate domain.Aggregate) {
 	aggregateType := reflect.TypeOf(aggregate)
 	for i := 0; i < aggregateType.NumMethod(); i++ {
 		method := aggregateType.Method(i)
@@ -31,7 +31,7 @@ func (h *dynamicCommandHandler) RegisterHandlers(aggregate domain.Aggregate) {
 	}
 }
 
-func (h *dynamicCommandHandler) methodHasValidSignature(method reflect.Method) bool {
+func (h *DynamicCommandHandler) methodHasValidSignature(method reflect.Method) bool {
 	if method.Type.NumIn() != 2 {
 		return false
 	}
@@ -46,7 +46,7 @@ func (h *dynamicCommandHandler) methodHasValidSignature(method reflect.Method) b
 	return true
 }
 
-func (h *dynamicCommandHandler) invokeCommandHandler(
+func (h *DynamicCommandHandler) invokeCommandHandler(
 	method reflect.Method, aggregate domain.Aggregate, c domain.Command) ([]domain.DomainEvent, error) {
 	result := method.Func.Call([]reflect.Value{reflect.ValueOf(aggregate), reflect.ValueOf(c)})
 	resErr := result[1].Interface()

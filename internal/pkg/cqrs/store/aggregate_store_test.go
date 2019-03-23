@@ -95,7 +95,7 @@ func TestAggregateStoreStore(t *testing.T) {
 		// arrange
 		ID := ksuid.New()
 		s := createAggregateStore(ID, withEventStoreSaveErr(mock.ErrEventStoreCannotStoreEvents))
-		agg := aggregate.NewBase(mock.NewTestAggregate(ID), nil, nil)
+		agg := createAgg(ID)
 
 		// act
 		err := s.Store(agg, nil)
@@ -103,6 +103,18 @@ func TestAggregateStoreStore(t *testing.T) {
 		// assert
 		assert.Equals(t, mock.ErrEventStoreCannotStoreEvents, err)
 	})
+}
+
+func createAgg(ID ksuid.KSUID) *aggregate.Base {
+	pureAgg := mock.NewTestAggregate(ID)
+
+	commandHandler := aggregate.NewDynamicCommandHandler()
+	commandHandler.RegisterHandlers(pureAgg)
+
+	eventApplier := aggregate.NewDynamicEventApplier()
+	eventApplier.RegisterAppliers(pureAgg)
+
+	return aggregate.NewBase(pureAgg, commandHandler, eventApplier)
 }
 
 type aggregateStoreOptions struct {
@@ -147,24 +159,23 @@ func withEventStoreSaveErr(err error) option {
 	}
 }
 
-type eventApplier interface {
-	domain.EventApplier
-	RegisterAppliers(aggregate domain.Aggregate)
-	RegisterApplier(method string, applierFunc domain.EventApplierFunc)
-}
-
 func createAggregateStore(ID domain.Identifier, opts ...option) *store.AggregateStore {
 	config := &aggregateStoreOptions{}
 	for _, opt := range opts {
 		opt(config)
 	}
 
-	var applier eventApplier
-	if config.staticEventApplier {
-		applier = aggregate.NewStaticEventApplier()
+	pureAgg := mock.NewTestAggregate(ID)
+
+	applier := aggregate.NewDynamicEventApplier()
+	if !config.staticEventApplier {
+		applier.RegisterAppliers(pureAgg)
 	}
 
-	agg := aggregate.NewBase(mock.NewTestAggregate(ID), nil, applier)
+	commandHandler := aggregate.NewDynamicCommandHandler()
+	commandHandler.RegisterHandlers(pureAgg)
+
+	agg := aggregate.NewBase(pureAgg, commandHandler, applier)
 	if config.loadedEvents != nil {
 		_ = agg.Apply(config.loadedEvents...)
 	}

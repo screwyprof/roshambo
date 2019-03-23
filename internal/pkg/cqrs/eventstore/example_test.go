@@ -10,9 +10,8 @@ import (
 	"github.com/screwyprof/roshambo/pkg/domain"
 )
 
-func ExampleInMemoryEventStore_LoadEventsFor() {
+func ExampleInMemoryEventStoreLoadEventsFor() {
 	ID := mock.StringIdentifier("TestAgg")
-	aggregate.NewBase(mock.NewTestAggregate(ID), nil, nil)
 
 	es := eventstore.NewInInMemoryEventStore()
 	_ = es.StoreEventsFor(ID, 0, []domain.DomainEvent{mock.SomethingHappened{}})
@@ -24,9 +23,18 @@ func ExampleInMemoryEventStore_LoadEventsFor() {
 	// []domain.DomainEvent{mock.SomethingHappened{}}
 }
 
-func ExampleInMemoryEventStoreStoreEventsFor_ConcurrencyError() {
+func ExampleInMemoryEventStoreStoreEventsForConcurrencyError() {
 	ID := mock.StringIdentifier("TestAgg")
-	aggregate.NewBase(mock.NewTestAggregate(ID), nil, nil)
+
+	pureAgg := mock.NewTestAggregate(ID)
+
+	commandHandler := aggregate.NewDynamicCommandHandler()
+	commandHandler.RegisterHandlers(pureAgg)
+
+	eventApplier := aggregate.NewDynamicEventApplier()
+	eventApplier.RegisterAppliers(pureAgg)
+
+	aggregate.NewBase(pureAgg, commandHandler, eventApplier)
 
 	es := eventstore.NewInInMemoryEventStore()
 	err := es.StoreEventsFor(ID, 1, []domain.DomainEvent{mock.SomethingHappened{}})
