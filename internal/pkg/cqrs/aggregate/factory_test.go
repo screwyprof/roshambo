@@ -34,7 +34,19 @@ func TestFactoryRegisterAggregate(t *testing.T) {
 	t.Run("ItRegistersAnAggregateFactory", func(t *testing.T) {
 		// arrange
 		ID := mock.StringIdentifier("TestAgg")
-		expected := aggregate.NewBase(mock.NewTestAggregate(ID), nil, nil)
+		agg := mock.NewTestAggregate(ID)
+
+		commandHandler := aggregate.NewCommandHandler()
+		commandHandler.RegisterHandlers(agg)
+
+		eventApplier := aggregate.NewEventApplier()
+		eventApplier.RegisterAppliers(agg)
+
+		expected := aggregate.NewAdvanced(
+			agg,
+			commandHandler,
+			eventApplier,
+		)
 
 		f := aggregate.NewFactory()
 
