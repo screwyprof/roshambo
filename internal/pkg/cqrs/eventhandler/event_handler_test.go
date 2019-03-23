@@ -11,20 +11,20 @@ import (
 )
 
 // ensure that event handler implements domain.EventHandler interface.
-var _ domain.EventHandler = (*eventhandler.Static)(nil)
+var _ domain.EventHandler = (*eventhandler.EventHandler)(nil)
 
-func TestNewStatic(t *testing.T) {
+func TestNew(t *testing.T) {
 	t.Run("ItCreatesNewInstance", func(t *testing.T) {
-		assert.True(t, eventhandler.NewStatic() != nil)
+		assert.True(t, eventhandler.New() != nil)
 	})
 }
 
-func TestStaticHandle(t *testing.T) {
+func TestEventHandlerHandle(t *testing.T) {
 	t.Run("ItHandlesTheGivenEvent", func(t *testing.T) {
 		// arrange
 		eh := &mock.TestEventHandler{}
 
-		s := eventhandler.NewStatic()
+		s := eventhandler.New()
 		s.RegisterHandler("OnSomethingHappened", func(e domain.DomainEvent) error {
 			return eh.OnSomethingHappened(e.(mock.SomethingHappened))
 		})
@@ -39,7 +39,7 @@ func TestStaticHandle(t *testing.T) {
 
 	t.Run("ItFailsIfEventHandlerIsNotRegistered", func(t *testing.T) {
 		// arrange
-		s := eventhandler.NewStatic()
+		s := eventhandler.New()
 
 		// act
 		err := s.Handle(mock.SomethingElseHappened{})
@@ -52,7 +52,7 @@ func TestStaticHandle(t *testing.T) {
 		// arrange
 		eh := &mock.TestEventHandler{}
 
-		s := eventhandler.NewStatic()
+		s := eventhandler.New()
 		s.RegisterHandler("OnSomethingElseHappened", func(e domain.DomainEvent) error {
 			return eh.OnSomethingElseHappened(e.(mock.SomethingElseHappened))
 		})
@@ -65,12 +65,12 @@ func TestStaticHandle(t *testing.T) {
 	})
 }
 
-func TestStaticSubscribedTo(t *testing.T) {
+func TestEventHandlerSubscribedTo(t *testing.T) {
 	t.Run("ItReturnersTheEventsItSubscribedTo", func(t *testing.T) {
 		// arrange
 		eh := &mock.TestEventHandler{}
 
-		s := eventhandler.NewStatic()
+		s := eventhandler.New()
 		s.RegisterHandler("OnSomethingHappened", func(e domain.DomainEvent) error {
 			return eh.OnSomethingHappened(e.(mock.SomethingHappened))
 		})

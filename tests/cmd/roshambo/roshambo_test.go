@@ -44,7 +44,7 @@ func printGameInfo(gameInfo report.GameShortInfo) {
 }
 
 func createDispatcher(gameInfo *report.GameShortInfo) *dispatcher.Dispatcher {
-	gameInfoProjector := eventhandler.NewDynamic()
+	gameInfoProjector := eventhandler.New()
 	gameInfoProjector.RegisterHandlers(&gameEventHandler.GameShortInfoProjector{Projection: gameInfo})
 
 	f := aggregate.NewFactory()
