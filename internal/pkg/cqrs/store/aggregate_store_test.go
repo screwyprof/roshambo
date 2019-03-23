@@ -105,7 +105,7 @@ func TestAggregateStoreStore(t *testing.T) {
 	})
 }
 
-func createAgg(ID ksuid.KSUID) *aggregate.Base {
+func createAgg(ID ksuid.KSUID) *aggregate.Advanced {
 	pureAgg := mock.NewTestAggregate(ID)
 
 	commandHandler := aggregate.NewCommandHandler()
@@ -114,7 +114,7 @@ func createAgg(ID ksuid.KSUID) *aggregate.Base {
 	eventApplier := aggregate.NewEventApplier()
 	eventApplier.RegisterAppliers(pureAgg)
 
-	return aggregate.NewBase(pureAgg, commandHandler, eventApplier)
+	return aggregate.NewAdvanced(pureAgg, commandHandler, eventApplier)
 }
 
 type aggregateStoreOptions struct {
@@ -175,7 +175,7 @@ func createAggregateStore(ID domain.Identifier, opts ...option) *store.Aggregate
 	commandHandler := aggregate.NewCommandHandler()
 	commandHandler.RegisterHandlers(pureAgg)
 
-	agg := aggregate.NewBase(pureAgg, commandHandler, applier)
+	agg := aggregate.NewAdvanced(pureAgg, commandHandler, applier)
 	if config.loadedEvents != nil {
 		_ = agg.Apply(config.loadedEvents...)
 	}
@@ -185,7 +185,7 @@ func createAggregateStore(ID domain.Identifier, opts ...option) *store.Aggregate
 	return store.NewStore(eventStore, aggFactory)
 }
 
-func createAggFactory(agg *aggregate.Base, empty bool) *aggregate.Factory {
+func createAggFactory(agg *aggregate.Advanced, empty bool) *aggregate.Factory {
 	f := aggregate.NewFactory()
 	if empty {
 		return f

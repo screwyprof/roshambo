@@ -152,7 +152,7 @@ func TestAggregateMakeMove(t *testing.T) {
 	})
 }
 
-func createTestAggregate() *aggregate.Base {
+func createTestAggregate() *aggregate.Advanced {
 	gameAgg := game.NewAggregate(ksuid.New())
 
 	commandHandler := aggregate.NewCommandHandler()
@@ -161,5 +161,5 @@ func createTestAggregate() *aggregate.Base {
 	eventApplier := aggregate.NewEventApplier()
 	eventApplier.RegisterAppliers(gameAgg)
 
-	return aggregate.NewBase(gameAgg, commandHandler, eventApplier)
+	return aggregate.NewAdvanced(gameAgg, commandHandler, eventApplier)
 }

@@ -57,7 +57,7 @@ func createDispatcher(gameInfo *report.GameShortInfo) *dispatcher.Dispatcher {
 		eventApplier := aggregate.NewEventApplier()
 		eventApplier.RegisterAppliers(gameAgg)
 
-		return aggregate.NewBase(gameAgg, commandHandler, eventApplier)
+		return aggregate.NewAdvanced(gameAgg, commandHandler, eventApplier)
 	})
 
 	aggregateStore := store.NewStore(eventstore.NewInInMemoryEventStore(), f)

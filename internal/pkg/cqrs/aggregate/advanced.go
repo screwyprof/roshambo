@@ -4,8 +4,8 @@ import (
 	"github.com/screwyprof/roshambo/pkg/domain"
 )
 
-// Base implements a basic aggregate root.
-type Base struct {
+// Advanced implements an advanced aggregate root.
+type Advanced struct {
 	domain.Aggregate
 	version int
 
@@ -13,8 +13,8 @@ type Base struct {
 	eventApplier   domain.EventApplier
 }
 
-// NewBase creates a new instance of Base.
-func NewBase(pureAgg domain.Aggregate, commandHandler domain.CommandHandler, eventApplier domain.EventApplier) *Base {
+// NewAdvanced creates a new instance of Advanced.
+func NewAdvanced(pureAgg domain.Aggregate, commandHandler domain.CommandHandler, eventApplier domain.EventApplier) *Advanced {
 	if pureAgg == nil {
 		panic("pureAgg is required")
 	}
@@ -27,7 +27,7 @@ func NewBase(pureAgg domain.Aggregate, commandHandler domain.CommandHandler, eve
 		panic("eventApplier is required")
 	}
 
-	return &Base{
+	return &Advanced{
 		Aggregate:      pureAgg,
 		commandHandler: commandHandler,
 		eventApplier:   eventApplier,
@@ -35,12 +35,12 @@ func NewBase(pureAgg domain.Aggregate, commandHandler domain.CommandHandler, eve
 }
 
 // Version implements domain.Versionable interface.
-func (b *Base) Version() int {
+func (b *Advanced) Version() int {
 	return b.version
 }
 
 // Handle implements domain.CommandHandler.
-func (b *Base) Handle(c domain.Command) ([]domain.DomainEvent, error) {
+func (b *Advanced) Handle(c domain.Command) ([]domain.DomainEvent, error) {
 	events, err := b.commandHandler.Handle(c)
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (b *Base) Handle(c domain.Command) ([]domain.DomainEvent, error) {
 }
 
 // Apply implements domain.EventApplier interface.
-func (b *Base) Apply(e ...domain.DomainEvent) error {
+func (b *Advanced) Apply(e ...domain.DomainEvent) error {
 	if err := b.eventApplier.Apply(e...); err != nil {
 		return err
 	}

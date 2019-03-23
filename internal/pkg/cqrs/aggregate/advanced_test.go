@@ -12,27 +12,27 @@ import (
 	"github.com/screwyprof/roshambo/pkg/domain"
 )
 
-// ensure that basic aggregate implements domain.AdvancedAggregate interface.
-var _ domain.AdvancedAggregate = (*aggregate.Base)(nil)
+// ensure that Advanced implements domain.AdvancedAggregate interface.
+var _ domain.AdvancedAggregate = (*aggregate.Advanced)(nil)
 
 func TestNewBase(t *testing.T) {
 	t.Run("ItPanicsIfThePureAggregateIsNotGiven", func(t *testing.T) {
 		factory := func() {
-			aggregate.NewBase(nil, nil, nil)
+			aggregate.NewAdvanced(nil, nil, nil)
 		}
 		assert.Panic(t, factory)
 	})
 
 	t.Run("ItPanicsIfCommandHandlerIsNotGiven", func(t *testing.T) {
 		factory := func() {
-			aggregate.NewBase(NewTestAggregate(StringIdentifier("Test")), nil, nil)
+			aggregate.NewAdvanced(NewTestAggregate(StringIdentifier("Test")), nil, nil)
 		}
 		assert.Panic(t, factory)
 	})
 
 	t.Run("ItPanicsIfEventApplierIsNotGiven", func(t *testing.T) {
 		factory := func() {
-			aggregate.NewBase(
+			aggregate.NewAdvanced(
 				NewTestAggregate(StringIdentifier("Test")),
 				aggregate.NewCommandHandler(),
 				nil,
@@ -103,7 +103,7 @@ func TestBaseApply(t *testing.T) {
 	})
 }
 
-func createTestAggWithDefaultCommandHandlerAndEventApplier() *aggregate.Base {
+func createTestAggWithDefaultCommandHandlerAndEventApplier() *aggregate.Advanced {
 	ID := StringIdentifier("TestAgg1")
 	pureAgg := NewTestAggregate(ID)
 
@@ -113,34 +113,34 @@ func createTestAggWithDefaultCommandHandlerAndEventApplier() *aggregate.Base {
 	applier := aggregate.NewEventApplier()
 	applier.RegisterAppliers(pureAgg)
 
-	return aggregate.NewBase(pureAgg, handler, applier)
+	return aggregate.NewAdvanced(pureAgg, handler, applier)
 }
 
-func createTestAggregateWithCustomCommandHandlerAndEventApplier() *aggregate.Base {
+func createTestAggregateWithCustomCommandHandlerAndEventApplier() *aggregate.Advanced {
 	ID := StringIdentifier("TestAgg1")
 	a := NewTestAggregate(ID)
 
-	return aggregate.NewBase(a, createCommandHandler(a), createEventApplier(a))
+	return aggregate.NewAdvanced(a, createCommandHandler(a), createEventApplier(a))
 }
 
-func createTestAggWithEmptyCommandHandler() *aggregate.Base {
+func createTestAggWithEmptyCommandHandler() *aggregate.Advanced {
 	ID := StringIdentifier("TestAgg1")
 	pureAgg := NewTestAggregate(ID)
 
 	applier := aggregate.NewEventApplier()
 	applier.RegisterAppliers(pureAgg)
 
-	return aggregate.NewBase(pureAgg, aggregate.NewCommandHandler(), applier)
+	return aggregate.NewAdvanced(pureAgg, aggregate.NewCommandHandler(), applier)
 }
 
-func createTestAggWithEmptyEventApplier() *aggregate.Base {
+func createTestAggWithEmptyEventApplier() *aggregate.Advanced {
 	ID := StringIdentifier("TestAgg1")
 	pureAgg := NewTestAggregate(ID)
 
 	handler := aggregate.NewCommandHandler()
 	handler.RegisterHandlers(pureAgg)
 
-	return aggregate.NewBase(pureAgg, handler, aggregate.NewEventApplier())
+	return aggregate.NewAdvanced(pureAgg, handler, aggregate.NewEventApplier())
 }
 
 func createEventApplier(pureAgg *TestAggregate) *aggregate.EventApplier {

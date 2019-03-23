@@ -142,7 +142,7 @@ func createDispatcher(ID domain.Identifier, opts ...option) *dispatcher.Dispatch
 	eventApplier := aggregate.NewEventApplier()
 	eventApplier.RegisterAppliers(pureAgg)
 
-	agg := aggregate.NewBase(pureAgg, commandHandler, eventApplier)
+	agg := aggregate.NewAdvanced(pureAgg, commandHandler, eventApplier)
 	if config.loadedEvents != nil {
 		_ = agg.Apply(config.loadedEvents...)
 	}

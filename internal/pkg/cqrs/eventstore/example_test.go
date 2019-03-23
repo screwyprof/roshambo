@@ -34,7 +34,7 @@ func ExampleInMemoryEventStoreStoreEventsForConcurrencyError() {
 	eventApplier := aggregate.NewEventApplier()
 	eventApplier.RegisterAppliers(pureAgg)
 
-	aggregate.NewBase(pureAgg, commandHandler, eventApplier)
+	aggregate.NewAdvanced(pureAgg, commandHandler, eventApplier)
 
 	es := eventstore.NewInInMemoryEventStore()
 	err := es.StoreEventsFor(ID, 1, []domain.DomainEvent{mock.SomethingHappened{}})
