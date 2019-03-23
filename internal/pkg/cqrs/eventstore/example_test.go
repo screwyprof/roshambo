@@ -28,7 +28,7 @@ func ExampleInMemoryEventStoreStoreEventsForConcurrencyError() {
 
 	pureAgg := mock.NewTestAggregate(ID)
 
-	commandHandler := aggregate.NewDynamicCommandHandler()
+	commandHandler := aggregate.NewCommandHandler()
 	commandHandler.RegisterHandlers(pureAgg)
 
 	eventApplier := aggregate.NewDynamicEventApplier()

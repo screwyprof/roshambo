@@ -136,7 +136,7 @@ func createDispatcher(ID domain.Identifier, opts ...option) *dispatcher.Dispatch
 
 	pureAgg := mock.NewTestAggregate(ID)
 
-	commandHandler := aggregate.NewDynamicCommandHandler()
+	commandHandler := aggregate.NewCommandHandler()
 	commandHandler.RegisterHandlers(pureAgg)
 
 	eventApplier := aggregate.NewDynamicEventApplier()

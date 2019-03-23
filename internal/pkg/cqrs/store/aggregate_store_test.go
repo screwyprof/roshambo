@@ -108,7 +108,7 @@ func TestAggregateStoreStore(t *testing.T) {
 func createAgg(ID ksuid.KSUID) *aggregate.Base {
 	pureAgg := mock.NewTestAggregate(ID)
 
-	commandHandler := aggregate.NewDynamicCommandHandler()
+	commandHandler := aggregate.NewCommandHandler()
 	commandHandler.RegisterHandlers(pureAgg)
 
 	eventApplier := aggregate.NewDynamicEventApplier()
@@ -172,7 +172,7 @@ func createAggregateStore(ID domain.Identifier, opts ...option) *store.Aggregate
 		applier.RegisterAppliers(pureAgg)
 	}
 
-	commandHandler := aggregate.NewDynamicCommandHandler()
+	commandHandler := aggregate.NewCommandHandler()
 	commandHandler.RegisterHandlers(pureAgg)
 
 	agg := aggregate.NewBase(pureAgg, commandHandler, applier)

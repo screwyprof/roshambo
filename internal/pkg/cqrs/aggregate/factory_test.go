@@ -36,7 +36,7 @@ func TestFactoryRegisterAggregate(t *testing.T) {
 		ID := mock.StringIdentifier("TestAgg")
 		agg := mock.NewTestAggregate(ID)
 
-		commandHandler := aggregate.NewDynamicCommandHandler()
+		commandHandler := aggregate.NewCommandHandler()
 		commandHandler.RegisterHandlers(agg)
 
 		eventApplier := aggregate.NewDynamicEventApplier()

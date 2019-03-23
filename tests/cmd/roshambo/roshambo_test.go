@@ -51,7 +51,7 @@ func createDispatcher(gameInfo *report.GameShortInfo) *dispatcher.Dispatcher {
 	f.RegisterAggregate(func(ID domain.Identifier) domain.AdvancedAggregate {
 		gameAgg := game.NewAggregate(ID)
 
-		commandHandler := aggregate.NewDynamicCommandHandler()
+		commandHandler := aggregate.NewCommandHandler()
 		commandHandler.RegisterHandlers(gameAgg)
 
 		eventApplier := aggregate.NewDynamicEventApplier()

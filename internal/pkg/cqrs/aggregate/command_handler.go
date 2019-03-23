@@ -8,21 +8,21 @@ import (
 	"github.com/screwyprof/roshambo/pkg/domain"
 )
 
-// DynamicCommandHandler registers and handles commands.
-type DynamicCommandHandler struct {
+// CommandHandler registers and handles commands.
+type CommandHandler struct {
 	handlers   map[string]domain.CommandHandlerFunc
 	handlersMu sync.RWMutex
 }
 
-// NewDynamicCommandHandler creates a new instance of DynamicCommandHandler.
-func NewDynamicCommandHandler() *DynamicCommandHandler {
-	return &DynamicCommandHandler{
+// NewCommandHandler creates a new instance of CommandHandler.
+func NewCommandHandler() *CommandHandler {
+	return &CommandHandler{
 		handlers: make(map[string]domain.CommandHandlerFunc),
 	}
 }
 
 // Handle implements domain.CommandHandler interface.
-func (h *DynamicCommandHandler) Handle(c domain.Command) ([]domain.DomainEvent, error) {
+func (h *CommandHandler) Handle(c domain.Command) ([]domain.DomainEvent, error) {
 	h.handlersMu.RLock()
 	defer h.handlersMu.RUnlock()
 
@@ -35,14 +35,14 @@ func (h *DynamicCommandHandler) Handle(c domain.Command) ([]domain.DomainEvent, 
 }
 
 // RegisterHandler registers a command handler for the given method.
-func (h *DynamicCommandHandler) RegisterHandler(method string, handler domain.CommandHandlerFunc) {
+func (h *CommandHandler) RegisterHandler(method string, handler domain.CommandHandlerFunc) {
 	h.handlersMu.Lock()
 	defer h.handlersMu.Unlock()
 	h.handlers[method] = handler
 }
 
 // RegisterHandlers registers all the command handlers found in the aggregate.
-func (h *DynamicCommandHandler) RegisterHandlers(aggregate domain.Aggregate) {
+func (h *CommandHandler) RegisterHandlers(aggregate domain.Aggregate) {
 	aggregateType := reflect.TypeOf(aggregate)
 	for i := 0; i < aggregateType.NumMethod(); i++ {
 		method := aggregateType.Method(i)
@@ -56,7 +56,7 @@ func (h *DynamicCommandHandler) RegisterHandlers(aggregate domain.Aggregate) {
 	}
 }
 
-func (h *DynamicCommandHandler) methodHasValidSignature(method reflect.Method) bool {
+func (h *CommandHandler) methodHasValidSignature(method reflect.Method) bool {
 	if method.Type.NumIn() != 2 {
 		return false
 	}
@@ -71,7 +71,7 @@ func (h *DynamicCommandHandler) methodHasValidSignature(method reflect.Method) b
 	return true
 }
 
-func (h *DynamicCommandHandler) invokeCommandHandler(
+func (h *CommandHandler) invokeCommandHandler(
 	method reflect.Method, aggregate domain.Aggregate, c domain.Command) ([]domain.DomainEvent, error) {
 	result := method.Func.Call([]reflect.Value{reflect.ValueOf(aggregate), reflect.ValueOf(c)})
 	resErr := result[1].Interface()
