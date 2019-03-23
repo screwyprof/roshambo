@@ -31,7 +31,7 @@ func ExampleInMemoryEventStoreStoreEventsForConcurrencyError() {
 	commandHandler := aggregate.NewCommandHandler()
 	commandHandler.RegisterHandlers(pureAgg)
 
-	eventApplier := aggregate.NewDynamicEventApplier()
+	eventApplier := aggregate.NewEventApplier()
 	eventApplier.RegisterAppliers(pureAgg)
 
 	aggregate.NewBase(pureAgg, commandHandler, eventApplier)

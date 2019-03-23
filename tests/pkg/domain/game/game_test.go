@@ -95,7 +95,7 @@ func createDispatcher(gameInfo *report.GameShortInfo) *dispatcher.Dispatcher {
 		commandHandler := aggregate.NewCommandHandler()
 		commandHandler.RegisterHandlers(gameAgg)
 
-		eventApplier := aggregate.NewDynamicEventApplier()
+		eventApplier := aggregate.NewEventApplier()
 		eventApplier.RegisterAppliers(gameAgg)
 
 		return aggregate.NewBase(gameAgg, commandHandler, eventApplier)

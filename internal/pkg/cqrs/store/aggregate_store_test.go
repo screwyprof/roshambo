@@ -111,7 +111,7 @@ func createAgg(ID ksuid.KSUID) *aggregate.Base {
 	commandHandler := aggregate.NewCommandHandler()
 	commandHandler.RegisterHandlers(pureAgg)
 
-	eventApplier := aggregate.NewDynamicEventApplier()
+	eventApplier := aggregate.NewEventApplier()
 	eventApplier.RegisterAppliers(pureAgg)
 
 	return aggregate.NewBase(pureAgg, commandHandler, eventApplier)
@@ -167,7 +167,7 @@ func createAggregateStore(ID domain.Identifier, opts ...option) *store.Aggregate
 
 	pureAgg := mock.NewTestAggregate(ID)
 
-	applier := aggregate.NewDynamicEventApplier()
+	applier := aggregate.NewEventApplier()
 	if !config.staticEventApplier {
 		applier.RegisterAppliers(pureAgg)
 	}

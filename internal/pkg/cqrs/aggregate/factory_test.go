@@ -39,7 +39,7 @@ func TestFactoryRegisterAggregate(t *testing.T) {
 		commandHandler := aggregate.NewCommandHandler()
 		commandHandler.RegisterHandlers(agg)
 
-		eventApplier := aggregate.NewDynamicEventApplier()
+		eventApplier := aggregate.NewEventApplier()
 		eventApplier.RegisterAppliers(agg)
 
 		expected := aggregate.NewBase(

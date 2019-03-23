@@ -139,7 +139,7 @@ func createDispatcher(ID domain.Identifier, opts ...option) *dispatcher.Dispatch
 	commandHandler := aggregate.NewCommandHandler()
 	commandHandler.RegisterHandlers(pureAgg)
 
-	eventApplier := aggregate.NewDynamicEventApplier()
+	eventApplier := aggregate.NewEventApplier()
 	eventApplier.RegisterAppliers(pureAgg)
 
 	agg := aggregate.NewBase(pureAgg, commandHandler, eventApplier)

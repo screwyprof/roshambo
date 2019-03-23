@@ -110,7 +110,7 @@ func createTestAggWithDefaultCommandHandlerAndEventApplier() *aggregate.Base {
 	handler := aggregate.NewCommandHandler()
 	handler.RegisterHandlers(pureAgg)
 
-	applier := aggregate.NewDynamicEventApplier()
+	applier := aggregate.NewEventApplier()
 	applier.RegisterAppliers(pureAgg)
 
 	return aggregate.NewBase(pureAgg, handler, applier)
@@ -127,7 +127,7 @@ func createTestAggWithEmptyCommandHandler() *aggregate.Base {
 	ID := StringIdentifier("TestAgg1")
 	pureAgg := NewTestAggregate(ID)
 
-	applier := aggregate.NewDynamicEventApplier()
+	applier := aggregate.NewEventApplier()
 	applier.RegisterAppliers(pureAgg)
 
 	return aggregate.NewBase(pureAgg, aggregate.NewCommandHandler(), applier)
@@ -140,11 +140,11 @@ func createTestAggWithEmptyEventApplier() *aggregate.Base {
 	handler := aggregate.NewCommandHandler()
 	handler.RegisterHandlers(pureAgg)
 
-	return aggregate.NewBase(pureAgg, handler, aggregate.NewStaticEventApplier())
+	return aggregate.NewBase(pureAgg, handler, aggregate.NewEventApplier())
 }
 
-func createEventApplier(pureAgg *TestAggregate) *aggregate.StaticEventApplier {
-	eventApplier := aggregate.NewStaticEventApplier()
+func createEventApplier(pureAgg *TestAggregate) *aggregate.EventApplier {
+	eventApplier := aggregate.NewEventApplier()
 	eventApplier.RegisterApplier("OnSomethingHappened", func(e domain.DomainEvent) {
 		pureAgg.OnSomethingHappened(e.(SomethingHappened))
 	})
