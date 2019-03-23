@@ -1,19 +1,44 @@
 package aggregate
 
 import (
+	"fmt"
 	"reflect"
+	"sync"
 
 	"github.com/screwyprof/roshambo/pkg/domain"
 )
 
+// DynamicCommandHandler registers and handles commands.
 type DynamicCommandHandler struct {
-	*StaticCommandHandler
+	handlers   map[string]domain.CommandHandlerFunc
+	handlersMu sync.RWMutex
 }
 
+// NewDynamicCommandHandler creates a new instance of DynamicCommandHandler.
 func NewDynamicCommandHandler() *DynamicCommandHandler {
 	return &DynamicCommandHandler{
-		StaticCommandHandler: NewStaticCommandHandler(),
+		handlers: make(map[string]domain.CommandHandlerFunc),
 	}
+}
+
+// Handle implements domain.CommandHandler interface.
+func (h *DynamicCommandHandler) Handle(c domain.Command) ([]domain.DomainEvent, error) {
+	h.handlersMu.RLock()
+	defer h.handlersMu.RUnlock()
+
+	handler, ok := h.handlers[c.CommandType()]
+	if !ok {
+		return nil, fmt.Errorf("handler for %s command is not found", c.CommandType())
+	}
+
+	return handler(c)
+}
+
+// RegisterHandler registers a command handler for the given method.
+func (h *DynamicCommandHandler) RegisterHandler(method string, handler domain.CommandHandlerFunc) {
+	h.handlersMu.Lock()
+	defer h.handlersMu.Unlock()
+	h.handlers[method] = handler
 }
 
 // RegisterHandlers registers all the command handlers found in the aggregate.
@@ -25,7 +50,7 @@ func (h *DynamicCommandHandler) RegisterHandlers(aggregate domain.Aggregate) {
 			continue
 		}
 
-		h.StaticCommandHandler.RegisterHandler(method.Name, func(c domain.Command) ([]domain.DomainEvent, error) {
+		h.RegisterHandler(method.Name, func(c domain.Command) ([]domain.DomainEvent, error) {
 			return h.invokeCommandHandler(method, aggregate, c)
 		})
 	}
