@@ -1,9 +1,8 @@
 package assert
 
 import (
+	"reflect"
 	"testing"
-
-	"github.com/screwyprof/roshambo/internal/pkg/assert/deep"
 )
 
 // True fails the test if the condition is false.
@@ -25,8 +24,8 @@ func Ok(tb testing.TB, err error) {
 // Equals fails the test if exp is not equal to act.
 func Equals(tb testing.TB, exp, act interface{}) {
 	tb.Helper()
-	if diff := deep.Equal(exp, act); diff != nil {
-		tb.Error("\033[31m", diff, "\033[39m")
+	if !reflect.DeepEqual(exp, act) {
+		tb.Errorf("\033[31m\n\n\texp:\n\t%#+v\n\tgot:\n\t%#+vv\033[39m", exp, act)
 	}
 }
 
