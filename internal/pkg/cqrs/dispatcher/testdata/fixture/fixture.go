@@ -4,21 +4,20 @@ import (
 	"testing"
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
-
-	"github.com/screwyprof/roshambo/pkg/domain"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 )
 
 // GivenFn is a test init function.
-type GivenFn func() domain.CommandHandler
+type GivenFn func() cqrs.CommandHandler
 
 // WhenFn is a command handler function.
-type WhenFn func(dispatcher domain.CommandHandler) ([]domain.DomainEvent, error)
+type WhenFn func(dispatcher cqrs.CommandHandler) ([]cqrs.DomainEvent, error)
 
 // ThenFn prepares the Checker.
 type ThenFn func(t *testing.T) Checker
 
 // Checker asserts the given results.
-type Checker func(got []domain.DomainEvent, err error)
+type Checker func(got []cqrs.DomainEvent, err error)
 
 // DispatcherTester defines a dispatcher tester.
 type DispatcherTester func(given GivenFn, when WhenFn, then ThenFn)
@@ -39,16 +38,16 @@ func Test(t *testing.T) DispatcherTester {
 }
 
 // Given prepares the given aggregate for testing.
-func Given(dispatcher domain.CommandHandler) GivenFn {
-	return func() domain.CommandHandler {
+func Given(dispatcher cqrs.CommandHandler) GivenFn {
+	return func() cqrs.CommandHandler {
 		return dispatcher
 	}
 }
 
 // When prepares the command handler for the given command.
-func When(cmd ...domain.Command) WhenFn {
-	return func(dispatcher domain.CommandHandler) ([]domain.DomainEvent, error) {
-		var events []domain.DomainEvent
+func When(cmd ...cqrs.Command) WhenFn {
+	return func(dispatcher cqrs.CommandHandler) ([]cqrs.DomainEvent, error) {
+		var events []cqrs.DomainEvent
 		for _, c := range cmd {
 			e, err := dispatcher.Handle(c)
 			if err != nil {
@@ -61,9 +60,9 @@ func When(cmd ...domain.Command) WhenFn {
 }
 
 // Then asserts that the expected events are applied.
-func Then(want ...domain.DomainEvent) ThenFn {
+func Then(want ...cqrs.DomainEvent) ThenFn {
 	return func(t *testing.T) Checker {
-		return func(got []domain.DomainEvent, err error) {
+		return func(got []cqrs.DomainEvent, err error) {
 			t.Helper()
 			assert.Ok(t, err)
 			assert.Equals(t, want, got)
@@ -74,7 +73,7 @@ func Then(want ...domain.DomainEvent) ThenFn {
 // ThenFailWith asserts that the expected error occurred.
 func ThenFailWith(want error) ThenFn {
 	return func(t *testing.T) Checker {
-		return func(got []domain.DomainEvent, err error) {
+		return func(got []cqrs.DomainEvent, err error) {
 			t.Helper()
 			assert.Equals(t, want, err)
 		}

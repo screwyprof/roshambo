@@ -1,17 +1,16 @@
 package eventhandler_test
 
 import (
-	"github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
 	"testing"
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/eventhandler"
-
-	"github.com/screwyprof/roshambo/pkg/domain"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
 )
 
-// ensure that event handler implements domain.EventHandler interface.
-var _ domain.EventHandler = (*eventhandler.EventHandler)(nil)
+// ensure that event handler implements cqrs.EventHandler interface.
+var _ cqrs.EventHandler = (*eventhandler.EventHandler)(nil)
 
 func TestNew(t *testing.T) {
 	t.Run("ItCreatesNewInstance", func(t *testing.T) {
@@ -66,10 +65,10 @@ func TestEventHandlerSubscribedTo(t *testing.T) {
 		eh := &mock.TestEventHandler{}
 
 		s := eventhandler.New()
-		s.RegisterHandler("OnSomethingHappened", func(e domain.DomainEvent) error {
+		s.RegisterHandler("OnSomethingHappened", func(e cqrs.DomainEvent) error {
 			return eh.OnSomethingHappened(e.(mock.SomethingHappened))
 		})
-		s.RegisterHandler("OnSomethingElseHappened", func(e domain.DomainEvent) error {
+		s.RegisterHandler("OnSomethingElseHappened", func(e cqrs.DomainEvent) error {
 			return eh.OnSomethingElseHappened(e.(mock.SomethingElseHappened))
 		})
 

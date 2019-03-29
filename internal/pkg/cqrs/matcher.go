@@ -1,4 +1,4 @@
-package domain
+package cqrs
 
 // EventMatcher is a func that can match event to a criteria.
 type EventMatcher func(DomainEvent) bool

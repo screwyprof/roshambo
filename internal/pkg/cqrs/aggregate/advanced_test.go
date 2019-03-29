@@ -4,16 +4,14 @@ import (
 	"testing"
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
-
 	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata/fixture"
 	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
-
-	"github.com/screwyprof/roshambo/pkg/domain"
 )
 
-// ensure that Advanced implements domain.AdvancedAggregate interface.
-var _ domain.AdvancedAggregate = (*aggregate.Advanced)(nil)
+// ensure that Advanced implements cqrs.AdvancedAggregate interface.
+var _ cqrs.AdvancedAggregate = (*aggregate.Advanced)(nil)
 
 func TestNewBase(t *testing.T) {
 	t.Run("ItPanicsIfThePureAggregateIsNotGiven", func(t *testing.T) {
@@ -145,7 +143,7 @@ func createTestAggWithEmptyEventApplier() *aggregate.Advanced {
 
 func createEventApplier(pureAgg *TestAggregate) *aggregate.EventApplier {
 	eventApplier := aggregate.NewEventApplier()
-	eventApplier.RegisterApplier("OnSomethingHappened", func(e domain.DomainEvent) {
+	eventApplier.RegisterApplier("OnSomethingHappened", func(e cqrs.DomainEvent) {
 		pureAgg.OnSomethingHappened(e.(SomethingHappened))
 	})
 	return eventApplier
@@ -153,7 +151,7 @@ func createEventApplier(pureAgg *TestAggregate) *aggregate.EventApplier {
 
 func createCommandHandler(pureAgg *TestAggregate) *aggregate.CommandHandler {
 	commandHandler := aggregate.NewCommandHandler()
-	commandHandler.RegisterHandler("MakeSomethingHappen", func(c domain.Command) ([]domain.DomainEvent, error) {
+	commandHandler.RegisterHandler("MakeSomethingHappen", func(c cqrs.Command) ([]cqrs.DomainEvent, error) {
 		return pureAgg.MakeSomethingHappen(c.(MakeSomethingHappen))
 	})
 	return commandHandler

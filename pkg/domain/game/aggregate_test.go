@@ -6,18 +6,18 @@ import (
 	"github.com/segmentio/ksuid"
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
 	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate/testdata/fixture"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
 
 	"github.com/screwyprof/roshambo/pkg/command"
-	"github.com/screwyprof/roshambo/pkg/domain"
 	"github.com/screwyprof/roshambo/pkg/domain/game"
 	"github.com/screwyprof/roshambo/pkg/event"
 )
 
 // ensure that game aggregate implements domain.Aggregate interface.
-var _ domain.Aggregate = (*game.Aggregate)(nil)
+var _ cqrs.Aggregate = (*game.Aggregate)(nil)
 
 func TestNewAggregate(t *testing.T) {
 	t.Run("ItPanicsIfIDIsNotGiven", func(t *testing.T) {

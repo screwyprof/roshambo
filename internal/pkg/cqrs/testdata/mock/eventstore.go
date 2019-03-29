@@ -3,7 +3,7 @@ package mock
 import (
 	"errors"
 
-	"github.com/screwyprof/roshambo/pkg/domain"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 )
 
 var (
@@ -15,16 +15,16 @@ var (
 
 // EventStoreMock mocks event store.
 type EventStoreMock struct {
-	Loader func(aggregateID domain.Identifier) ([]domain.DomainEvent, error)
-	Saver  func(aggregateID domain.Identifier, version int, events []domain.DomainEvent) error
+	Loader func(aggregateID cqrs.Identifier) ([]cqrs.DomainEvent, error)
+	Saver  func(aggregateID cqrs.Identifier, version int, events []cqrs.DomainEvent) error
 }
 
-// LoadEventsFor implements domain.EventStore interface.
-func (m *EventStoreMock) LoadEventsFor(aggregateID domain.Identifier) ([]domain.DomainEvent, error) {
+// LoadEventsFor implements cqrs.EventStore interface.
+func (m *EventStoreMock) LoadEventsFor(aggregateID cqrs.Identifier) ([]cqrs.DomainEvent, error) {
 	return m.Loader(aggregateID)
 }
 
-// StoreEventsFor implements domain.EventStore interface.
-func (m *EventStoreMock) StoreEventsFor(aggregateID domain.Identifier, version int, events []domain.DomainEvent) error {
+// StoreEventsFor implements cqrs.EventStore interface.
+func (m *EventStoreMock) StoreEventsFor(aggregateID cqrs.Identifier, version int, events []cqrs.DomainEvent) error {
 	return m.Saver(aggregateID, version, events)
 }

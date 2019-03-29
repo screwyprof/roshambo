@@ -3,7 +3,7 @@ package mock
 import (
 	"errors"
 
-	"github.com/screwyprof/roshambo/pkg/domain"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 )
 
 var (
@@ -21,7 +21,7 @@ func (i StringIdentifier) String() string {
 
 // TestAggregate a pure aggregate (has no external dependencies or dark magic method) used for testing.
 type TestAggregate struct {
-	id domain.Identifier
+	id cqrs.Identifier
 	version int
 	aggType string
 
@@ -29,25 +29,25 @@ type TestAggregate struct {
 }
 
 // NewTestAggregate creates a new instance of TestAggregate.
-func NewTestAggregate(ID domain.Identifier) *TestAggregate {
+func NewTestAggregate(ID cqrs.Identifier) *TestAggregate {
 	return &TestAggregate{id:ID}
 }
 
-// AggregateID implements domain.Aggregate interface.
-func (a *TestAggregate) AggregateID() domain.Identifier {
+// AggregateID implements cqrs.Aggregate interface.
+func (a *TestAggregate) AggregateID() cqrs.Identifier {
 	return a.id
 }
 
-// AggregateType implements domain.Aggregate interface.
+// AggregateType implements cqrs.Aggregate interface.
 func (a *TestAggregate) AggregateType() string {
 	return "mock.TestAggregate"
 }
 
-func (a *TestAggregate) MakeSomethingHappen(c MakeSomethingHappen) ([]domain.DomainEvent, error) {
+func (a *TestAggregate) MakeSomethingHappen(c MakeSomethingHappen) ([]cqrs.DomainEvent, error) {
 	if a.alreadyHappened {
 		return nil, ErrItCanHappenOnceOnly
 	}
-	return []domain.DomainEvent{SomethingHappened{}}, nil
+	return []cqrs.DomainEvent{SomethingHappened{}}, nil
 }
 
 func (a *TestAggregate) OnSomethingHappened(e SomethingHappened) {

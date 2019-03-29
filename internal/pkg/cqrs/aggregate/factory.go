@@ -6,23 +6,23 @@ import (
 
 	"github.com/segmentio/ksuid"
 
-	"github.com/screwyprof/roshambo/pkg/domain"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 )
 
 // Factory handles aggregate creation.
 type Factory struct {
-	factories   map[string]domain.FactoryFn
+	factories   map[string]cqrs.FactoryFn
 	factoriesMu sync.RWMutex
 }
 
 func NewFactory() *Factory {
 	return &Factory{
-		factories: make(map[string]domain.FactoryFn),
+		factories: make(map[string]cqrs.FactoryFn),
 	}
 }
 
 // RegisterAggregate registers an aggregate factory method.
-func (f *Factory) RegisterAggregate(factory domain.FactoryFn) {
+func (f *Factory) RegisterAggregate(factory cqrs.FactoryFn) {
 	f.factoriesMu.Lock()
 	defer f.factoriesMu.Unlock()
 
@@ -31,7 +31,7 @@ func (f *Factory) RegisterAggregate(factory domain.FactoryFn) {
 }
 
 // CreateAggregate creates an aggregate of a given type.
-func (f *Factory) CreateAggregate(aggregateType string, ID domain.Identifier) (domain.AdvancedAggregate, error) {
+func (f *Factory) CreateAggregate(aggregateType string, ID cqrs.Identifier) (cqrs.AdvancedAggregate, error) {
 	f.factoriesMu.Lock()
 	defer f.factoriesMu.Unlock()
 

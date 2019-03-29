@@ -1,6 +1,6 @@
 package dispatcher
 
-import "github.com/screwyprof/roshambo/pkg/domain"
+import "github.com/screwyprof/roshambo/internal/pkg/cqrs"
 
 // Dispatcher is a basic message dispatcher.
 //
@@ -9,12 +9,12 @@ import "github.com/screwyprof/roshambo/pkg/domain"
 // at startup and keep it in memory.
 // Depends on some kind of event storage mechanism.
 type Dispatcher struct {
-	store          domain.AggregateStore
-	eventPublisher domain.EventPublisher
+	store          cqrs.AggregateStore
+	eventPublisher cqrs.EventPublisher
 }
 
 // NewDispatcher creates a new instance of Dispatcher.
-func NewDispatcher(aggregateStore domain.AggregateStore, eventPublisher domain.EventPublisher) *Dispatcher {
+func NewDispatcher(aggregateStore cqrs.AggregateStore, eventPublisher cqrs.EventPublisher) *Dispatcher {
 	if aggregateStore == nil {
 		panic("aggregateStore is required")
 	}
@@ -29,8 +29,8 @@ func NewDispatcher(aggregateStore domain.AggregateStore, eventPublisher domain.E
 	}
 }
 
-// Handle implements domain.CommandHandler interface.
-func (d *Dispatcher) Handle(c domain.Command) ([]domain.DomainEvent, error) {
+// Handle implements cqrs.CommandHandler interface.
+func (d *Dispatcher) Handle(c cqrs.Command) ([]cqrs.DomainEvent, error) {
 	agg, err := d.store.Load(c.AggregateID(), c.AggregateType())
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func (d *Dispatcher) Handle(c domain.Command) ([]domain.DomainEvent, error) {
 	return events, nil
 }
 
-func (d *Dispatcher) storeAndPublishEvents(aggregate domain.AdvancedAggregate, events ...domain.DomainEvent) error {
+func (d *Dispatcher) storeAndPublishEvents(aggregate cqrs.AdvancedAggregate, events ...cqrs.DomainEvent) error {
 	err := d.store.Store(aggregate, events...)
 	if err != nil {
 		return err

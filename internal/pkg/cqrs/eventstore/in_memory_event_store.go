@@ -4,7 +4,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/screwyprof/roshambo/pkg/domain"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 )
 
 var (
@@ -14,19 +14,19 @@ var (
 
 // InMemoryEventStore stores and loads events from memory.
 type InMemoryEventStore struct {
-	eventStreams   map[domain.Identifier][]domain.DomainEvent
+	eventStreams   map[cqrs.Identifier][]cqrs.DomainEvent
 	eventStreamsMu sync.RWMutex
 }
 
 // NewInInMemoryEventStore creates a new instance of InMemoryEventStore.
 func NewInInMemoryEventStore() *InMemoryEventStore {
 	return &InMemoryEventStore{
-		eventStreams: make(map[domain.Identifier][]domain.DomainEvent),
+		eventStreams: make(map[cqrs.Identifier][]cqrs.DomainEvent),
 	}
 }
 
 // LoadEventsFor loads events for the given aggregate.
-func (s *InMemoryEventStore) LoadEventsFor(aggregateID domain.Identifier) ([]domain.DomainEvent, error) {
+func (s *InMemoryEventStore) LoadEventsFor(aggregateID cqrs.Identifier) ([]cqrs.DomainEvent, error) {
 	s.eventStreamsMu.RLock()
 	defer s.eventStreamsMu.RUnlock()
 
@@ -35,7 +35,7 @@ func (s *InMemoryEventStore) LoadEventsFor(aggregateID domain.Identifier) ([]dom
 
 // StoreEventsFor saves evens of the given aggregate.
 func (s *InMemoryEventStore) StoreEventsFor(
-	aggregateID domain.Identifier, version int, events []domain.DomainEvent) error {
+	aggregateID cqrs.Identifier, version int, events []cqrs.DomainEvent) error {
 
 	previousEvents, _ := s.LoadEventsFor(aggregateID)
 	if len(previousEvents) != version {

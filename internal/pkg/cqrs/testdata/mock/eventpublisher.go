@@ -3,7 +3,7 @@ package mock
 import (
 	"errors"
 
-	"github.com/screwyprof/roshambo/pkg/domain"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 )
 
 var (
@@ -13,11 +13,11 @@ var (
 
 // EventPublisherMock mocks event store.
 type EventPublisherMock struct {
-	Publisher func(e ...domain.DomainEvent) error
+	Publisher func(e ...cqrs.DomainEvent) error
 }
 
-// Publish implements domain.EventPublisher interface.
-func (m *EventPublisherMock) Publish(e ...domain.DomainEvent) error {
+// Publish implements cqrs.EventPublisher interface.
+func (m *EventPublisherMock) Publish(e ...cqrs.DomainEvent) error {
 	return m.Publisher(e...)
 }
 

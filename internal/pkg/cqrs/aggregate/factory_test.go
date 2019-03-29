@@ -4,14 +4,13 @@ import (
 	"testing"
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
-
-	"github.com/screwyprof/roshambo/pkg/domain"
 )
 
-// ensure that factory implements domain.AggregateFactory interface.
-var _ domain.AggregateFactory = (*aggregate.Factory)(nil)
+// ensure that factory implements cqrs.AggregateFactory interface.
+var _ cqrs.AggregateFactory = (*aggregate.Factory)(nil)
 
 func TestNewFactory(t *testing.T) {
 	t.Run("ItReturnsNewFactoryInstance", func(t *testing.T) {
@@ -51,7 +50,7 @@ func TestFactoryRegisterAggregate(t *testing.T) {
 		f := aggregate.NewFactory()
 
 		// act
-		f.RegisterAggregate(func(ID domain.Identifier) domain.AdvancedAggregate {
+		f.RegisterAggregate(func(ID cqrs.Identifier) cqrs.AdvancedAggregate {
 			return expected
 		})
 		newAgg, err := f.CreateAggregate("mock.TestAggregate", ID)

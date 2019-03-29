@@ -7,11 +7,11 @@ import (
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/eventstore"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
 
-	"github.com/screwyprof/roshambo/pkg/domain"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 )
 
-// ensure that event store implements domain.EventStore interface.
-var _ domain.EventStore = (*eventstore.InMemoryEventStore)(nil)
+// ensure that event store implements cqrs.EventStore interface.
+var _ cqrs.EventStore = (*eventstore.InMemoryEventStore)(nil)
 
 func TestNewInInMemoryEventStore(t *testing.T) {
 	t.Run("ItCreatesEventStore", func(t *testing.T) {
@@ -26,7 +26,7 @@ func TestInMemoryEventStoreLoadEventsFor(t *testing.T) {
 		ID := mock.StringIdentifier("TestAgg")
 		es := eventstore.NewInInMemoryEventStore()
 
-		want := []domain.DomainEvent{mock.SomethingHappened{}}
+		want := []cqrs.DomainEvent{mock.SomethingHappened{}}
 
 		err := es.StoreEventsFor(ID, 0, want)
 		assert.Ok(t, err)
@@ -47,7 +47,7 @@ func TestInMemoryEventStoreStoreEventsFor(t *testing.T) {
 		es := eventstore.NewInInMemoryEventStore()
 
 		// act
-		err := es.StoreEventsFor(ID, 1, []domain.DomainEvent{mock.SomethingHappened{}})
+		err := es.StoreEventsFor(ID, 1, []cqrs.DomainEvent{mock.SomethingHappened{}})
 
 		// assert
 		assert.Equals(t, eventstore.ErrConcurrencyViolation, err)

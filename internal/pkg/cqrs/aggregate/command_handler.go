@@ -5,24 +5,24 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/screwyprof/roshambo/pkg/domain"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 )
 
 // CommandHandler registers and handles commands.
 type CommandHandler struct {
-	handlers   map[string]domain.CommandHandlerFunc
+	handlers   map[string]cqrs.CommandHandlerFunc
 	handlersMu sync.RWMutex
 }
 
 // NewCommandHandler creates a new instance of CommandHandler.
 func NewCommandHandler() *CommandHandler {
 	return &CommandHandler{
-		handlers: make(map[string]domain.CommandHandlerFunc),
+		handlers: make(map[string]cqrs.CommandHandlerFunc),
 	}
 }
 
-// Handle implements domain.CommandHandler interface.
-func (h *CommandHandler) Handle(c domain.Command) ([]domain.DomainEvent, error) {
+// Handle implements cqrs.CommandHandler interface.
+func (h *CommandHandler) Handle(c cqrs.Command) ([]cqrs.DomainEvent, error) {
 	h.handlersMu.RLock()
 	defer h.handlersMu.RUnlock()
 
@@ -35,14 +35,14 @@ func (h *CommandHandler) Handle(c domain.Command) ([]domain.DomainEvent, error) 
 }
 
 // RegisterHandler registers a command handler for the given method.
-func (h *CommandHandler) RegisterHandler(method string, handler domain.CommandHandlerFunc) {
+func (h *CommandHandler) RegisterHandler(method string, handler cqrs.CommandHandlerFunc) {
 	h.handlersMu.Lock()
 	defer h.handlersMu.Unlock()
 	h.handlers[method] = handler
 }
 
 // RegisterHandlers registers all the command handlers found in the aggregate.
-func (h *CommandHandler) RegisterHandlers(aggregate domain.Aggregate) {
+func (h *CommandHandler) RegisterHandlers(aggregate cqrs.Aggregate) {
 	aggregateType := reflect.TypeOf(aggregate)
 	for i := 0; i < aggregateType.NumMethod(); i++ {
 		method := aggregateType.Method(i)
@@ -50,7 +50,7 @@ func (h *CommandHandler) RegisterHandlers(aggregate domain.Aggregate) {
 			continue
 		}
 
-		h.RegisterHandler(method.Name, func(c domain.Command) ([]domain.DomainEvent, error) {
+		h.RegisterHandler(method.Name, func(c cqrs.Command) ([]cqrs.DomainEvent, error) {
 			return h.invokeCommandHandler(method, aggregate, c)
 		})
 	}
@@ -61,8 +61,8 @@ func (h *CommandHandler) methodHasValidSignature(method reflect.Method) bool {
 		return false
 	}
 
-	// ensure that the method has a domain.Command as a parameter.
-	cmdIntfType := reflect.TypeOf((*domain.Command)(nil)).Elem()
+	// ensure that the method has a cqrs.Command as a parameter.
+	cmdIntfType := reflect.TypeOf((*cqrs.Command)(nil)).Elem()
 	cmdType := method.Type.In(1)
 	if !cmdType.Implements(cmdIntfType) {
 		return false
@@ -72,13 +72,39 @@ func (h *CommandHandler) methodHasValidSignature(method reflect.Method) bool {
 }
 
 func (h *CommandHandler) invokeCommandHandler(
-	method reflect.Method, aggregate domain.Aggregate, c domain.Command) ([]domain.DomainEvent, error) {
+	method reflect.Method, aggregate cqrs.Aggregate, c cqrs.Command) ([]cqrs.DomainEvent, error) {
 	result := method.Func.Call([]reflect.Value{reflect.ValueOf(aggregate), reflect.ValueOf(c)})
 	resErr := result[1].Interface()
 	if resErr != nil {
 		return nil, resErr.(error)
 	}
 	eventsIntf := result[0].Interface()
-	events := eventsIntf.([]domain.DomainEvent)
+	events := h.convertDomainEvents(eventsIntf)
 	return events, nil
+}
+
+func (h *CommandHandler) convertDomainEvents(eventsIntf interface{}) []cqrs.DomainEvent {
+	eventsIntfs := h.interfaceSlice(eventsIntf)
+
+	var events []cqrs.DomainEvent
+	for _, eventIntf := range eventsIntfs {
+		events = append(events, eventIntf.(cqrs.DomainEvent))
+	}
+
+	return events
+}
+
+func (h *CommandHandler) interfaceSlice(slice interface{}) []interface{} {
+	s := reflect.ValueOf(slice)
+	if s.Kind() != reflect.Slice {
+		panic("InterfaceSlice() given a non-slice type")
+	}
+
+	ret := make([]interface{}, s.Len())
+
+	for i := 0; i < s.Len(); i++ {
+		ret[i] = s.Index(i).Interface()
+	}
+
+	return ret
 }
