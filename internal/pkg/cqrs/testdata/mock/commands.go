@@ -1,12 +1,12 @@
 package mock
 
-import "github.com/screwyprof/roshambo/pkg/domain"
+import "github.com/screwyprof/roshambo/internal/pkg/cqrs"
 
 type MakeSomethingHappen struct{
-	AggID domain.Identifier
+	AggID cqrs.Identifier
 }
 
-func (c MakeSomethingHappen) AggregateID() domain.Identifier {
+func (c MakeSomethingHappen) AggregateID() cqrs.Identifier {
 	return c.AggID
 }
 

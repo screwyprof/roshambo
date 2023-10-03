@@ -6,15 +6,14 @@ import (
 	"github.com/segmentio/ksuid"
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
-	"github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
-
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/store"
-	"github.com/screwyprof/roshambo/pkg/domain"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
 )
 
-// ensure that AggregateStore implements domain.AggregateStore interface.
-var _ domain.AggregateStore = (*store.AggregateStore)(nil)
+// ensure that AggregateStore implements cqrs.AggregateStore interface.
+var _ cqrs.AggregateStore = (*store.AggregateStore)(nil)
 
 func TestNewStore(t *testing.T) {
 	t.Run("ItPanicsIfEventStoreIsNotGiven", func(t *testing.T) {
@@ -65,7 +64,7 @@ func TestAggregateStoreLoad(t *testing.T) {
 		ID := ksuid.New()
 		s := createAggregateStore(
 			ID,
-			withLoadedEvents([]domain.DomainEvent{mock.SomethingHappened{}}),
+			withLoadedEvents([]cqrs.DomainEvent{mock.SomethingHappened{}}),
 			withStaticEventApplier(),
 		)
 
@@ -120,7 +119,7 @@ func createAgg(ID ksuid.KSUID) *aggregate.Advanced {
 type aggregateStoreOptions struct {
 	emptyFactory       bool
 	staticEventApplier bool
-	loadedEvents       []domain.DomainEvent
+	loadedEvents       []cqrs.DomainEvent
 
 	loadErr      error
 	storeErr     error
@@ -141,7 +140,7 @@ func withEmptyFactory() option {
 	}
 }
 
-func withLoadedEvents(loadedEvents []domain.DomainEvent) option {
+func withLoadedEvents(loadedEvents []cqrs.DomainEvent) option {
 	return func(o *aggregateStoreOptions) {
 		o.loadedEvents = loadedEvents
 	}
@@ -159,7 +158,7 @@ func withEventStoreSaveErr(err error) option {
 	}
 }
 
-func createAggregateStore(ID domain.Identifier, opts ...option) *store.AggregateStore {
+func createAggregateStore(ID cqrs.Identifier, opts ...option) *store.AggregateStore {
 	config := &aggregateStoreOptions{}
 	for _, opt := range opts {
 		opt(config)
@@ -190,19 +189,19 @@ func createAggFactory(agg *aggregate.Advanced, empty bool) *aggregate.Factory {
 	if empty {
 		return f
 	}
-	f.RegisterAggregate(func(ID domain.Identifier) domain.AdvancedAggregate {
+	f.RegisterAggregate(func(ID cqrs.Identifier) cqrs.AdvancedAggregate {
 		return agg
 	})
 
 	return f
 }
 
-func createEventStoreMock(want []domain.DomainEvent, loadErr error, storeErr error) *mock.EventStoreMock {
+func createEventStoreMock(want []cqrs.DomainEvent, loadErr error, storeErr error) *mock.EventStoreMock {
 	eventStore := &mock.EventStoreMock{
-		Loader: func(aggregateID domain.Identifier) ([]domain.DomainEvent, error) {
+		Loader: func(aggregateID cqrs.Identifier) ([]cqrs.DomainEvent, error) {
 			return want, loadErr
 		},
-		Saver: func(aggregateID domain.Identifier, version int, events []domain.DomainEvent) error {
+		Saver: func(aggregateID cqrs.Identifier, version int, events []cqrs.DomainEvent) error {
 			return storeErr
 		},
 	}

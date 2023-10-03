@@ -3,7 +3,7 @@ package mock
 import (
 	"errors"
 
-	"github.com/screwyprof/roshambo/pkg/domain"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 )
 
 var (
@@ -15,17 +15,17 @@ var (
 
 // AggregateStoreMock mocks event store.
 type AggregateStoreMock struct {
-	Loader func(aggregateID domain.Identifier, aggregateType string) (domain.AdvancedAggregate, error)
-	Saver func(aggregate domain.AdvancedAggregate, events ...domain.DomainEvent) error
+	Loader func(aggregateID cqrs.Identifier, aggregateType string) (cqrs.AdvancedAggregate, error)
+	Saver func(aggregate cqrs.AdvancedAggregate, events ...cqrs.DomainEvent) error
 }
 
-// Load implements domain.AggregateStore interface.
+// Load implements cqrs.AggregateStore interface.
 func (m *AggregateStoreMock) Load(
-	aggregateID domain.Identifier, aggregateType string) (domain.AdvancedAggregate, error) {
+	aggregateID cqrs.Identifier, aggregateType string) (cqrs.AdvancedAggregate, error) {
 	return m.Loader(aggregateID, aggregateType)
 }
 
-// StoreEventsFor implements domain.AggregateStore interface.
-func (m *AggregateStoreMock) Store(aggregate domain.AdvancedAggregate, events ...domain.DomainEvent) error {
+// StoreEventsFor implements cqrs.AggregateStore interface.
+func (m *AggregateStoreMock) Store(aggregate cqrs.AdvancedAggregate, events ...cqrs.DomainEvent) error {
 	return m.Saver(aggregate, events...)
 }

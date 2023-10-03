@@ -4,21 +4,20 @@ import (
 	"testing"
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
-
-	"github.com/screwyprof/roshambo/pkg/domain"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 )
 
 // GivenFn is a test init function.
-type GivenFn func() (domain.AdvancedAggregate, []domain.DomainEvent)
+type GivenFn func() (cqrs.AdvancedAggregate, []cqrs.DomainEvent)
 
 // WhenFn is a command handler function.
-type WhenFn func(agg domain.AdvancedAggregate, err error) ([]domain.DomainEvent, error)
+type WhenFn func(agg cqrs.AdvancedAggregate, err error) ([]cqrs.DomainEvent, error)
 
 // ThenFn prepares the Checker.
 type ThenFn func(t *testing.T) Checker
 
 // Checker asserts the given results.
-type Checker func(got []domain.DomainEvent, err error)
+type Checker func(got []cqrs.DomainEvent, err error)
 
 // AggregateTester defines an aggregate tester.
 type AggregateTester func(given GivenFn, when WhenFn, then ThenFn)
@@ -39,15 +38,15 @@ func Test(t *testing.T) AggregateTester {
 }
 
 // Given prepares the given aggregate for testing.
-func Given(agg domain.AdvancedAggregate, events ...domain.DomainEvent) GivenFn {
-	return func() (domain.AdvancedAggregate, []domain.DomainEvent) {
+func Given(agg cqrs.AdvancedAggregate, events ...cqrs.DomainEvent) GivenFn {
+	return func() (cqrs.AdvancedAggregate, []cqrs.DomainEvent) {
 		return agg, events
 	}
 }
 
 // When prepares the command handler for the given command.
-func When(c domain.Command) WhenFn {
-	return func(agg domain.AdvancedAggregate, err error) ([]domain.DomainEvent, error) {
+func When(c cqrs.Command) WhenFn {
+	return func(agg cqrs.AdvancedAggregate, err error) ([]cqrs.DomainEvent, error) {
 		if err != nil {
 			return nil, err
 		}
@@ -56,9 +55,9 @@ func When(c domain.Command) WhenFn {
 }
 
 // Then asserts that the expected events are applied.
-func Then(want ...domain.DomainEvent) ThenFn {
+func Then(want ...cqrs.DomainEvent) ThenFn {
 	return func(t *testing.T) Checker {
-		return func(got []domain.DomainEvent, err error) {
+		return func(got []cqrs.DomainEvent, err error) {
 			t.Helper()
 			assert.Ok(t, err)
 			assert.Equals(t, want, got)
@@ -69,14 +68,14 @@ func Then(want ...domain.DomainEvent) ThenFn {
 // ThenFailWith asserts that the expected error occurred.
 func ThenFailWith(want error) ThenFn {
 	return func(t *testing.T) Checker {
-		return func(got []domain.DomainEvent, err error) {
+		return func(got []cqrs.DomainEvent, err error) {
 			t.Helper()
 			assert.Equals(t, want, err)
 		}
 	}
 }
 
-func applyEvents(given GivenFn) (domain.AdvancedAggregate, error) {
+func applyEvents(given GivenFn) (cqrs.AdvancedAggregate, error) {
 	agg, events := given()
 	err := agg.Apply(events...)
 	if err != nil {

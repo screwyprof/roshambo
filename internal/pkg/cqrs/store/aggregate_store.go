@@ -1,15 +1,15 @@
 package store
 
-import "github.com/screwyprof/roshambo/pkg/domain"
+import "github.com/screwyprof/roshambo/internal/pkg/cqrs"
 
 // AggregateStore loads and stores aggregates.
 type AggregateStore struct {
-	aggregateFactory domain.AggregateFactory
-	eventStore       domain.EventStore
+	aggregateFactory cqrs.AggregateFactory
+	eventStore       cqrs.EventStore
 }
 
 // NewStore creates a new instance of AggregateStore.
-func NewStore(eventStore domain.EventStore, aggregateFactory domain.AggregateFactory) *AggregateStore {
+func NewStore(eventStore cqrs.EventStore, aggregateFactory cqrs.AggregateFactory) *AggregateStore {
 	if eventStore == nil {
 		panic("eventStore is required")
 	}
@@ -24,8 +24,8 @@ func NewStore(eventStore domain.EventStore, aggregateFactory domain.AggregateFac
 	}
 }
 
-// Load implements domain.AggregateStore interface.
-func (s *AggregateStore) Load(aggregateID domain.Identifier, aggregateType string) (domain.AdvancedAggregate, error) {
+// Load implements cqrs.AggregateStore interface.
+func (s *AggregateStore) Load(aggregateID cqrs.Identifier, aggregateType string) (cqrs.AdvancedAggregate, error) {
 	loadedEvents, err := s.eventStore.LoadEventsFor(aggregateID)
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func (s *AggregateStore) Load(aggregateID domain.Identifier, aggregateType strin
 	return agg, nil
 }
 
-// Store implements domain.AggregateStore interface.
-func (s *AggregateStore) Store(agg domain.AdvancedAggregate, events ...domain.DomainEvent) error {
+// Store implements cqrs.AggregateStore interface.
+func (s *AggregateStore) Store(agg cqrs.AdvancedAggregate, events ...cqrs.DomainEvent) error {
 	return s.eventStore.StoreEventsFor(agg.AggregateID(), agg.Version(), events)
 }

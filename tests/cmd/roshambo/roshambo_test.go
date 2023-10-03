@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/dispatcher"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/eventbus"
@@ -48,7 +49,7 @@ func createDispatcher(gameInfo *report.GameShortInfo) *dispatcher.Dispatcher {
 	gameInfoProjector.RegisterHandlers(&gameEventHandler.GameShortInfoProjector{Projection: gameInfo})
 
 	f := aggregate.NewFactory()
-	f.RegisterAggregate(func(ID domain.Identifier) domain.AdvancedAggregate {
+	f.RegisterAggregate(func(ID domain.Identifier) cqrs.AdvancedAggregate {
 		gameAgg := game.NewAggregate(ID)
 
 		commandHandler := aggregate.NewCommandHandler()
@@ -67,7 +68,7 @@ func createDispatcher(gameInfo *report.GameShortInfo) *dispatcher.Dispatcher {
 	return dispatcher.NewDispatcher(aggregateStore, eventBus)
 }
 
-func failOnError(_ []domain.DomainEvent, err error) {
+func failOnError(_ []cqrs.DomainEvent, err error) {
 	if err != nil {
 		fmt.Printf("an error occured: %v", err)
 		os.Exit(1)

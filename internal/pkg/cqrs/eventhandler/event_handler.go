@@ -6,45 +6,45 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/screwyprof/roshambo/pkg/domain"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 )
 
 // EventHandler handles events.
 type EventHandler struct {
-	handlers   map[string]domain.EventHandlerFunc
+	handlers   map[string]cqrs.EventHandlerFunc
 	handlersMu sync.RWMutex
 }
 
 // New creates new instance of New.
 func New() *EventHandler {
 	return &EventHandler{
-		handlers: make(map[string]domain.EventHandlerFunc),
+		handlers: make(map[string]cqrs.EventHandlerFunc),
 	}
 }
 
 // RegisterHandler registers an event handler for the given method.
-func (s *EventHandler) RegisterHandler(method string, handler domain.EventHandlerFunc) {
-	s.handlersMu.Lock()
-	defer s.handlersMu.Unlock()
-	s.handlers[method] = handler
+func (h *EventHandler) RegisterHandler(method string, handler cqrs.EventHandlerFunc) {
+	h.handlersMu.Lock()
+	defer h.handlersMu.Unlock()
+	h.handlers[method] = handler
 }
 
-// SubscribedTo implements domain.EventHandler interface.
-func (s *EventHandler) SubscribedTo() domain.EventMatcher {
+// SubscribedTo implements cqrs.EventHandler interface.
+func (h *EventHandler) SubscribedTo() cqrs.EventMatcher {
 	var subscribedTo []string
-	for m := range s.handlers {
+	for m := range h.handlers {
 		subscribedTo = append(subscribedTo, strings.TrimPrefix(m, "On"))
 	}
-	return domain.MatchAnyEventOf(subscribedTo...)
+	return cqrs.MatchAnyEventOf(subscribedTo...)
 }
 
-// Handle implements domain.EventHandler interface.
-func (s *EventHandler) Handle(e domain.DomainEvent) error {
-	s.handlersMu.RLock()
-	defer s.handlersMu.RUnlock()
+// Handle implements cqrs.EventHandler interface.
+func (h *EventHandler) Handle(e cqrs.DomainEvent) error {
+	h.handlersMu.RLock()
+	defer h.handlersMu.RUnlock()
 
 	handlerID := "On" + e.EventType()
-	handler, ok := s.handlers[handlerID]
+	handler, ok := h.handlers[handlerID]
 	if !ok {
 		return fmt.Errorf("event handler for %s event is not found", handlerID)
 	}
@@ -66,12 +66,12 @@ func (h *EventHandler) registerHandlerDynamically(method reflect.Method, entity 
 		return
 	}
 
-	h.RegisterHandler(method.Name, func(e domain.DomainEvent) error {
+	h.RegisterHandler(method.Name, func(e cqrs.DomainEvent) error {
 		return h.invokeEventHandler(method, entity, e)
 	})
 }
 
-func (h *EventHandler) invokeEventHandler(method reflect.Method, entity interface{}, e domain.DomainEvent) error {
+func (h *EventHandler) invokeEventHandler(method reflect.Method, entity interface{}, e cqrs.DomainEvent) error {
 	result := method.Func.Call([]reflect.Value{reflect.ValueOf(entity), reflect.ValueOf(e)})
 	resErr := result[0].Interface()
 	if resErr != nil {

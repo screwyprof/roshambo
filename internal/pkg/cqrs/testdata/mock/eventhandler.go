@@ -3,7 +3,7 @@ package mock
 import (
 	"errors"
 
-	"github.com/screwyprof/roshambo/pkg/domain"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 )
 
 var (
@@ -30,18 +30,18 @@ func (h *TestEventHandler) SomeInvalidMethod() {
 
 type EventHandlerMock struct {
 	Err error
-	Matcher domain.EventMatcher
-	Happened []domain.DomainEvent
+	Matcher cqrs.EventMatcher
+	Happened []cqrs.DomainEvent
 }
 
-func (h *EventHandlerMock) SubscribedTo() domain.EventMatcher {
+func (h *EventHandlerMock) SubscribedTo() cqrs.EventMatcher {
 	if h.Matcher != nil {
 		return h.Matcher
 	}
-	return domain.MatchAnyEventOf("SomethingHappened", "SomethingElseHappened")
+	return cqrs.MatchAnyEventOf("SomethingHappened", "SomethingElseHappened")
 }
 
-func (h *EventHandlerMock) Handle(event domain.DomainEvent) error {
+func (h *EventHandlerMock) Handle(event cqrs.DomainEvent) error {
 	if h.Err != nil {
 		return h.Err
 	}

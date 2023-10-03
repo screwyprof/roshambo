@@ -6,16 +6,15 @@ import (
 	"github.com/segmentio/ksuid"
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/dispatcher"
 	. "github.com/screwyprof/roshambo/internal/pkg/cqrs/dispatcher/testdata/fixture"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
-
-	"github.com/screwyprof/roshambo/pkg/domain"
 )
 
-// ensure that Dispatcher  implements domain.CommandHandler interface.
-var _ domain.CommandHandler = (*dispatcher.Dispatcher)(nil)
+// ensure that Dispatcher  implements cqrs.CommandHandler interface.
+var _ cqrs.CommandHandler = (*dispatcher.Dispatcher)(nil)
 
 func TestNewDispatcher(t *testing.T) {
 	t.Run("ItPanicsIfAggregateStoreIsNotGiven", func(t *testing.T) {
@@ -54,7 +53,7 @@ func TestNewDispatcherHandle(t *testing.T) {
 		Test(t)(
 			Given(createDispatcher(
 				ID,
-				withLoadedEvents([]domain.DomainEvent{mock.SomethingHappened{}}),
+				withLoadedEvents([]cqrs.DomainEvent{mock.SomethingHappened{}}),
 			)),
 			When(mock.MakeSomethingHappen{AggID: ID}),
 			ThenFailWith(mock.ErrItCanHappenOnceOnly),
@@ -95,7 +94,7 @@ func TestNewDispatcherHandle(t *testing.T) {
 type dispatcherOptions struct {
 	emptyFactory       bool
 	staticEventApplier bool
-	loadedEvents       []domain.DomainEvent
+	loadedEvents       []cqrs.DomainEvent
 
 	loadErr      error
 	storeErr     error
@@ -104,7 +103,7 @@ type dispatcherOptions struct {
 
 type option func(*dispatcherOptions)
 
-func withLoadedEvents(loadedEvents []domain.DomainEvent) option {
+func withLoadedEvents(loadedEvents []cqrs.DomainEvent) option {
 	return func(o *dispatcherOptions) {
 		o.loadedEvents = loadedEvents
 	}
@@ -128,7 +127,7 @@ func withPublisherErr(err error) option {
 	}
 }
 
-func createDispatcher(ID domain.Identifier, opts ...option) *dispatcher.Dispatcher {
+func createDispatcher(ID cqrs.Identifier, opts ...option) *dispatcher.Dispatcher {
 	config := &dispatcherOptions{}
 	for _, opt := range opts {
 		opt(config)
@@ -153,12 +152,12 @@ func createDispatcher(ID domain.Identifier, opts ...option) *dispatcher.Dispatch
 	)
 }
 
-func createAggregateStoreMock(want domain.AdvancedAggregate, loadErr error, storeErr error) *mock.AggregateStoreMock {
+func createAggregateStoreMock(want cqrs.AdvancedAggregate, loadErr error, storeErr error) *mock.AggregateStoreMock {
 	eventStore := &mock.AggregateStoreMock{
-		Loader: func(aggregateID domain.Identifier, aggregateType string) (domain.AdvancedAggregate, error) {
+		Loader: func(aggregateID cqrs.Identifier, aggregateType string) (cqrs.AdvancedAggregate, error) {
 			return want, loadErr
 		},
-		Saver: func(aggregate domain.AdvancedAggregate, events ...domain.DomainEvent) error {
+		Saver: func(aggregate cqrs.AdvancedAggregate, events ...cqrs.DomainEvent) error {
 			return storeErr
 		},
 	}
@@ -167,7 +166,7 @@ func createAggregateStoreMock(want domain.AdvancedAggregate, loadErr error, stor
 
 func createEventPublisherMock(err error) *mock.EventPublisherMock {
 	eventPublisher := &mock.EventPublisherMock{
-		Publisher: func(e ...domain.DomainEvent) error {
+		Publisher: func(e ...cqrs.DomainEvent) error {
 			return err
 		},
 	}

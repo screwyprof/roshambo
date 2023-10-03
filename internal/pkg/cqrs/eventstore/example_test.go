@@ -3,24 +3,23 @@ package eventstore_test
 import (
 	"fmt"
 
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/aggregate"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/eventstore"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
-
-	"github.com/screwyprof/roshambo/pkg/domain"
 )
 
 func ExampleInMemoryEventStoreLoadEventsFor() {
 	ID := mock.StringIdentifier("TestAgg")
 
 	es := eventstore.NewInInMemoryEventStore()
-	_ = es.StoreEventsFor(ID, 0, []domain.DomainEvent{mock.SomethingHappened{}})
+	_ = es.StoreEventsFor(ID, 0, []cqrs.DomainEvent{mock.SomethingHappened{}})
 
 	events, _ := es.LoadEventsFor(ID)
 	fmt.Printf("%#v", events)
 
 	// Output:
-	// []domain.DomainEvent{mock.SomethingHappened{}}
+	// []cqrs.DomainEvent{mock.SomethingHappened{}}
 }
 
 func ExampleInMemoryEventStoreStoreEventsForConcurrencyError() {
@@ -37,7 +36,7 @@ func ExampleInMemoryEventStoreStoreEventsForConcurrencyError() {
 	aggregate.NewAdvanced(pureAgg, commandHandler, eventApplier)
 
 	es := eventstore.NewInInMemoryEventStore()
-	err := es.StoreEventsFor(ID, 1, []domain.DomainEvent{mock.SomethingHappened{}})
+	err := es.StoreEventsFor(ID, 1, []cqrs.DomainEvent{mock.SomethingHappened{}})
 
 	fmt.Printf("%v", err)
 

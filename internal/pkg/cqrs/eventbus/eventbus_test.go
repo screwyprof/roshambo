@@ -4,14 +4,13 @@ import (
 	"testing"
 
 	"github.com/screwyprof/roshambo/internal/pkg/assert"
+	"github.com/screwyprof/roshambo/internal/pkg/cqrs"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/eventbus"
 	"github.com/screwyprof/roshambo/internal/pkg/cqrs/testdata/mock"
-
-	"github.com/screwyprof/roshambo/pkg/domain"
 )
 
-// ensure that EventBus implements domain.EventPublisher interface.
-var _ domain.EventPublisher = (*eventbus.InMemoryEventBus)(nil)
+// ensure that EventBus implements cqrs.EventPublisher interface.
+var _ cqrs.EventPublisher = (*eventbus.InMemoryEventBus)(nil)
 
 func TestNewInMemoryEventBus(t *testing.T) {
 	t.Run("ItCreatesNewInstance", func(t *testing.T) {
@@ -38,7 +37,7 @@ func TestInMemoryEventBus_Publish(t *testing.T) {
 
 	t.Run("ItPublishesEvents", func(t *testing.T) {
 		// arrange
-		want := []domain.DomainEvent{mock.SomethingHappened{}, mock.SomethingElseHappened{}}
+		want := []cqrs.DomainEvent{mock.SomethingHappened{}, mock.SomethingElseHappened{}}
 		eventHandler := &mock.EventHandlerMock{}
 
 		b := eventbus.NewInMemoryEventBus()
@@ -54,16 +53,16 @@ func TestInMemoryEventBus_Publish(t *testing.T) {
 
 	t.Run("ItHandlesOnlyMatchedEvents", func(t *testing.T) {
 		// arrange
-		want := []domain.DomainEvent{mock.SomethingHappened{}}
+		want := []cqrs.DomainEvent{mock.SomethingHappened{}}
 		eventHandler := &mock.EventHandlerMock{
-			Matcher: domain.MatchEvent("SomethingHappened"),
+			Matcher: cqrs.MatchEvent("SomethingHappened"),
 		}
 
 		b := eventbus.NewInMemoryEventBus()
 		b.Register(eventHandler)
 
 		// act
-		err := b.Publish([]domain.DomainEvent{
+		err := b.Publish([]cqrs.DomainEvent{
 			mock.SomethingHappened{},
 			mock.SomethingElseHappened{},
 		}...)
